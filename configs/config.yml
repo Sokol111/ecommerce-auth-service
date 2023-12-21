@@ -1,0 +1,9 @@
+port: "8081"
+secretKey: 980cb47f59414816425819f5a2ac2eaf35d9627dca6e8bf26d689fbe8826e76d93f550b735d0bc8e17549ea127c2cfe67586b2ae390815d364ecfcf614382d8b
+
+db:
+  host: "localhost"
+  port: "27019"
+  username: "root"
+  password: "password"
+  name: "auth-db"
