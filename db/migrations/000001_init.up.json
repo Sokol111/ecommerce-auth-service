@@ -1,0 +1,30 @@
+[
+    {
+        "createIndexes": "admin_user",
+        "indexes": [
+            {
+                "name": "admin_user_email_unique_v1",
+                "key": {
+                    "email": 1
+                },
+                "unique": true
+            },
+            {
+                "name": "admin_user_role_v1",
+                "key": {
+                    "role": 1
+                }
+            },
+            {
+                "name": "admin_user_enabled_v1",
+                "key": {
+                    "enabled": 1
+                }
+            }
+        ],
+        "commitQuorum": "majority",
+        "writeConcern": {
+            "w": "majority"
+        }
+    }
+]

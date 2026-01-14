@@ -1,0 +1,23 @@
+[
+    {
+        "dropIndexes": "admin_user",
+        "index": "admin_user_email_unique_v1",
+        "writeConcern": {
+            "w": "majority"
+        }
+    },
+    {
+        "dropIndexes": "admin_user",
+        "index": "admin_user_role_v1",
+        "writeConcern": {
+            "w": "majority"
+        }
+    },
+    {
+        "dropIndexes": "admin_user",
+        "index": "admin_user_enabled_v1",
+        "writeConcern": {
+            "w": "majority"
+        }
+    }
+]
