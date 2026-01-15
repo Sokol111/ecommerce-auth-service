@@ -1,5 +1,4 @@
 package security
-package security
 
 import (
 	"errors"
@@ -17,9 +16,9 @@ var (
 
 // TokenConfig holds configuration for token generation
 type TokenConfig struct {
-	SecretKey             string        `yaml:"secretKey"`
-	AccessTokenDuration   time.Duration `yaml:"accessTokenDuration"`
-	RefreshTokenDuration  time.Duration `yaml:"refreshTokenDuration"`
+	SecretKey            string        `yaml:"secretKey"`
+	AccessTokenDuration  time.Duration `yaml:"accessTokenDuration"`
+	RefreshTokenDuration time.Duration `yaml:"refreshTokenDuration"`
 }
 
 // DefaultTokenConfig returns default token configuration
@@ -39,7 +38,7 @@ type PasetoService struct {
 // NewPasetoService creates a new PASETO token service
 func NewPasetoService(config TokenConfig) (*PasetoService, error) {
 	var key paseto.V4SymmetricKey
-	
+
 	if config.SecretKey != "" {
 		// Use provided key (must be 32 bytes hex encoded)
 		keyBytes, err := hexDecode(config.SecretKey)
@@ -147,7 +146,7 @@ func hexDecode(s string) ([]byte, error) {
 	if len(s) != 64 {
 		return nil, errors.New("secret key must be 64 hex characters (32 bytes)")
 	}
-	
+
 	b := make([]byte, 32)
 	for i := 0; i < 32; i++ {
 		var val byte

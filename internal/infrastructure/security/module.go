@@ -1,5 +1,4 @@
 package security
-package security
 
 import (
 	"github.com/Sokol111/ecommerce-auth-service/internal/application/command"
