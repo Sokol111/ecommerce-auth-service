@@ -4,26 +4,19 @@ import (
 	"context"
 
 	"github.com/Sokol111/ecommerce-auth-service-api/gen/httpapi"
-	"github.com/Sokol111/ecommerce-auth-service/internal/application/command"
+	"github.com/Sokol111/ecommerce-commons/pkg/security/token"
 )
 
-type bearerTokenKey struct{}
-
 type securityHandler struct {
-	tokenService command.TokenService
+	tokenValidator token.TokenValidator
 }
 
-func newSecurityHandler(tokenService command.TokenService) httpapi.SecurityHandler {
-	return &securityHandler{tokenService: tokenService}
+func newSecurityHandler(tokenValidator token.TokenValidator) httpapi.SecurityHandler {
+	return &securityHandler{tokenValidator: tokenValidator}
 }
 
 // HandleBearerAuth handles BearerAuth security.
 func (s *securityHandler) HandleBearerAuth(ctx context.Context, operationName httpapi.OperationName, t httpapi.BearerAuth) (context.Context, error) {
-	_, err := s.tokenService.ValidateAccessToken(t.Token)
-	if err != nil {
-		return ctx, err
-	}
-
-	// Store token in context for handler to use
-	return context.WithValue(ctx, bearerTokenKey{}, t.Token), nil
+	ctx, _, err := token.HandleBearerAuth(s.tokenValidator, ctx, t.Token, t.Roles)
+	return ctx, err
 }

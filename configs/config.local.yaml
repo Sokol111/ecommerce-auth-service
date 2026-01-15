@@ -1,0 +1,22 @@
+logger:
+  level: "debug"
+  development: true
+
+server:
+  port: 8080
+
+mongo:
+  host: "mongo"
+  port: 27017
+  database: "auth"
+  replica-set: rs0
+  migrations:
+    enabled: true
+    auto-migrate: true
+
+observability:
+  otel-collector-endpoint: "otel-collector-opentelemetry-collector.observability.svc:4317"
+  tracing:
+    enabled: true
+  metrics:
+    enabled: false

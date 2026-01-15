@@ -1,0 +1,22 @@
+logger:
+  level: "debug"
+  development: true
+
+server:
+  port: 8080
+
+mongo:
+  host: "localhost"
+  port: 27017
+  database: "auth"
+  direct-connection: true
+  migrations:
+    enabled: true
+    auto-migrate: true
+
+observability:
+  otel-collector-endpoint: ""
+  tracing:
+    enabled: true
+  metrics:
+    enabled: false

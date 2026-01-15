@@ -14,6 +14,7 @@ import (
 	"github.com/Sokol111/ecommerce-auth-service/internal/application/query"
 	"github.com/Sokol111/ecommerce-auth-service/internal/domain/adminuser"
 	"github.com/Sokol111/ecommerce-commons/pkg/persistence"
+	"github.com/Sokol111/ecommerce-commons/pkg/security/token"
 )
 
 type authHandler struct {
@@ -28,7 +29,6 @@ type authHandler struct {
 	listUsersHandler      query.ListAdminUsersHandler
 	getRolesHandler       query.GetRolesHandler
 	getPermissionsHandler query.GetPermissionsHandler
-	tokenService          command.TokenService
 }
 
 func newAuthHandler(
@@ -43,7 +43,6 @@ func newAuthHandler(
 	listUsersHandler query.ListAdminUsersHandler,
 	getRolesHandler query.GetRolesHandler,
 	getPermissionsHandler query.GetPermissionsHandler,
-	tokenService command.TokenService,
 ) httpapi.Handler {
 	return &authHandler{
 		loginHandler:          loginHandler,
@@ -57,7 +56,6 @@ func newAuthHandler(
 		listUsersHandler:      listUsersHandler,
 		getRolesHandler:       getRolesHandler,
 		getPermissionsHandler: getPermissionsHandler,
-		tokenService:          tokenService,
 	}
 }
 
@@ -437,11 +435,11 @@ func (h *authHandler) GetPermissions(ctx context.Context) (httpapi.GetPermission
 }
 
 // getCurrentUserClaims extracts current user claims from context
-func (h *authHandler) getCurrentUserClaims(ctx context.Context) (*command.TokenClaims, error) {
-	// Token is validated by security handler and stored in context
-	token, ok := ctx.Value(bearerTokenKey{}).(string)
-	if !ok {
-		return nil, errors.New("no token in context")
+func (h *authHandler) getCurrentUserClaims(ctx context.Context) (*token.Claims, error) {
+	// Claims are validated by security handler and stored in context
+	claims := token.ClaimsFromContext(ctx)
+	if claims == nil {
+		return nil, errors.New("no claims in context")
 	}
-	return h.tokenService.ValidateAccessToken(token)
+	return claims, nil
 }

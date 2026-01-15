@@ -25,18 +25,18 @@ type LoginHandler interface {
 type loginHandler struct {
 	repo           adminuser.Repository
 	passwordHasher PasswordHasher
-	tokenService   TokenService
+	tokenGenerator TokenGenerator
 }
 
 func NewLoginHandler(
 	repo adminuser.Repository,
 	passwordHasher PasswordHasher,
-	tokenService TokenService,
+	tokenGenerator TokenGenerator,
 ) LoginHandler {
 	return &loginHandler{
 		repo:           repo,
 		passwordHasher: passwordHasher,
-		tokenService:   tokenService,
+		tokenGenerator: tokenGenerator,
 	}
 }
 
@@ -59,7 +59,7 @@ func (h *loginHandler) Handle(ctx context.Context, cmd LoginCommand) (*LoginResu
 		return nil, err
 	}
 
-	accessToken, refreshToken, expiresIn, err := h.tokenService.GenerateTokenPair(user)
+	accessToken, refreshToken, expiresIn, err := h.tokenGenerator.GenerateTokenPair(user)
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,7 @@
 package security
 
 import (
+	"encoding/hex"
 	"errors"
 	"time"
 
@@ -9,14 +10,10 @@ import (
 	"github.com/Sokol111/ecommerce-auth-service/internal/domain/adminuser"
 )
 
-var (
-	ErrInvalidToken = errors.New("invalid token")
-	ErrExpiredToken = errors.New("token expired")
-)
-
 // TokenConfig holds configuration for token generation
 type TokenConfig struct {
-	SecretKey            string        `yaml:"secretKey"`
+	// PrivateKey is the hex-encoded Ed25519 private key (64 bytes = 128 hex chars)
+	PrivateKey           string        `yaml:"privateKey"`
 	AccessTokenDuration  time.Duration `yaml:"accessTokenDuration"`
 	RefreshTokenDuration time.Duration `yaml:"refreshTokenDuration"`
 }
@@ -29,27 +26,33 @@ func DefaultTokenConfig() TokenConfig {
 	}
 }
 
-// PasetoService implements TokenService using PASETO v4
-type PasetoService struct {
-	symmetricKey paseto.V4SymmetricKey
-	config       TokenConfig
+// pasetoService implements TokenGenerator using PASETO v4 Public (asymmetric)
+type pasetoService struct {
+	privateKey paseto.V4AsymmetricSecretKey
+	config     TokenConfig
 }
 
-// NewPasetoService creates a new PASETO token service
-func NewPasetoService(config TokenConfig) (*PasetoService, error) {
-	var key paseto.V4SymmetricKey
+// newPasetoService creates a new PASETO token service with asymmetric keys
+func newPasetoService(config TokenConfig) (command.TokenGenerator, error) {
+	var privateKey paseto.V4AsymmetricSecretKey
 
-	if config.SecretKey != "" {
-		// Use provided key (must be 32 bytes hex encoded)
-		keyBytes, err := hexDecode(config.SecretKey)
+	if config.PrivateKey != "" {
+		// Use provided private key
+		keyBytes, err := hex.DecodeString(config.PrivateKey)
+		if err != nil {
+			return nil, errors.New("invalid private key hex encoding")
+		}
+		if len(keyBytes) != 64 {
+			return nil, errors.New("private key must be 64 bytes (128 hex characters)")
+		}
+
+		privateKey, err = paseto.NewV4AsymmetricSecretKeyFromBytes(keyBytes)
 		if err != nil {
 			return nil, err
 		}
-		key = paseto.NewV4SymmetricKey()
-		copy(key.ExportBytes()[:], keyBytes)
 	} else {
-		// Generate a new random key
-		key = paseto.NewV4SymmetricKey()
+		// Generate a new key pair (for development only!)
+		privateKey = paseto.NewV4AsymmetricSecretKey()
 	}
 
 	if config.AccessTokenDuration == 0 {
@@ -59,14 +62,20 @@ func NewPasetoService(config TokenConfig) (*PasetoService, error) {
 		config.RefreshTokenDuration = DefaultTokenConfig().RefreshTokenDuration
 	}
 
-	return &PasetoService{
-		symmetricKey: key,
-		config:       config,
+	return &pasetoService{
+		privateKey: privateKey,
+		config:     config,
 	}, nil
 }
 
+// GetPublicKeyHex returns the public key as hex string.
+// This can be shared with other services for token validation.
+func (s *pasetoService) GetPublicKeyHex() string {
+	return hex.EncodeToString(s.privateKey.Public().ExportBytes())
+}
+
 // GenerateTokenPair generates access and refresh tokens for a user
-func (s *PasetoService) GenerateTokenPair(user *adminuser.AdminUser) (string, string, int, error) {
+func (s *pasetoService) GenerateTokenPair(user *adminuser.AdminUser) (string, string, int, error) {
 	accessToken, err := s.generateToken(user, s.config.AccessTokenDuration, "access")
 	if err != nil {
 		return "", "", 0, err
@@ -81,89 +90,25 @@ func (s *PasetoService) GenerateTokenPair(user *adminuser.AdminUser) (string, st
 	return accessToken, refreshToken, expiresIn, nil
 }
 
-// ValidateAccessToken validates an access token and returns claims
-func (s *PasetoService) ValidateAccessToken(token string) (*command.TokenClaims, error) {
-	return s.validateToken(token, "access")
-}
-
-// ValidateRefreshToken validates a refresh token and returns claims
-func (s *PasetoService) ValidateRefreshToken(token string) (*command.TokenClaims, error) {
-	return s.validateToken(token, "refresh")
-}
-
-func (s *PasetoService) generateToken(user *adminuser.AdminUser, duration time.Duration, tokenType string) (string, error) {
+func (s *pasetoService) generateToken(user *adminuser.AdminUser, duration time.Duration, tokenType string) (string, error) {
 	now := time.Now()
 
-	token := paseto.NewToken()
-	token.SetIssuedAt(now)
-	token.SetNotBefore(now)
-	token.SetExpiration(now.Add(duration))
-	token.SetSubject(user.ID)
-	token.SetString("email", user.Email)
-	token.SetString("role", string(user.Role))
-	token.SetString("type", tokenType)
-
-	return token.V4Encrypt(s.symmetricKey, nil), nil
-}
-
-func (s *PasetoService) validateToken(tokenString string, expectedType string) (*command.TokenClaims, error) {
-	parser := paseto.NewParser()
-	parser.AddRule(paseto.NotExpired())
-
-	token, err := parser.ParseV4Local(s.symmetricKey, tokenString, nil)
-	if err != nil {
-		return nil, ErrInvalidToken
+	// Get permissions for the user's role
+	permissions := user.GetPermissions()
+	permStrings := make([]string, len(permissions))
+	for i, p := range permissions {
+		permStrings[i] = string(p)
 	}
 
-	tokenType, err := token.GetString("type")
-	if err != nil || tokenType != expectedType {
-		return nil, ErrInvalidToken
-	}
+	tk := paseto.NewToken()
+	tk.SetIssuedAt(now)
+	tk.SetNotBefore(now)
+	tk.SetExpiration(now.Add(duration))
+	tk.SetSubject(user.ID)
+	tk.SetString("role", string(user.Role))
+	tk.SetString("type", tokenType)
+	tk.Set("permissions", permStrings)
 
-	subject, err := token.GetSubject()
-	if err != nil {
-		return nil, ErrInvalidToken
-	}
-
-	email, err := token.GetString("email")
-	if err != nil {
-		return nil, ErrInvalidToken
-	}
-
-	roleStr, err := token.GetString("role")
-	if err != nil {
-		return nil, ErrInvalidToken
-	}
-
-	return &command.TokenClaims{
-		UserID: subject,
-		Email:  email,
-		Role:   adminuser.Role(roleStr),
-	}, nil
-}
-
-func hexDecode(s string) ([]byte, error) {
-	if len(s) != 64 {
-		return nil, errors.New("secret key must be 64 hex characters (32 bytes)")
-	}
-
-	b := make([]byte, 32)
-	for i := 0; i < 32; i++ {
-		var val byte
-		for j := 0; j < 2; j++ {
-			c := s[i*2+j]
-			switch {
-			case c >= '0' && c <= '9':
-				val = val*16 + (c - '0')
-			case c >= 'a' && c <= 'f':
-				val = val*16 + (c - 'a' + 10)
-			case c >= 'A' && c <= 'F':
-				val = val*16 + (c - 'A' + 10)
-			default:
-				return nil, errors.New("invalid hex character")
-			}
-		}
-		b[i] = val
-	}
-	return b, nil
+	// Sign with private key (V4 Public = asymmetric)
+	return tk.V4Sign(s.privateKey, nil), nil
 }
