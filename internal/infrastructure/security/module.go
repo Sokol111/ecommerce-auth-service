@@ -7,7 +7,8 @@ import (
 // Module provides security infrastructure dependencies
 func Module() fx.Option {
 	return fx.Provide(
+		newConfig,
 		newBcryptHasher,
-		newPasetoService,
+		newTokenGenerator,
 	)
 }

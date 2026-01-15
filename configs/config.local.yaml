@@ -20,3 +20,50 @@ observability:
     enabled: true
   metrics:
     enabled: false
+
+security:
+  public-key: "eb6ebefd6a2b0a304d43c2ccca329aef0a1439d429dbe8ca9b6190622ce38341"
+
+token:
+  private-key: "e9bc26b8119fa3ccd616e3bd05603507fd308cb30a0a99c4b858c621dd147f1beb6ebefd6a2b0a304d43c2ccca329aef0a1439d429dbe8ca9b6190622ce38341"
+  access-token-duration: 15m
+  refresh-token-duration: 48h
+
+permissions:
+  roles:
+    - name: "super_admin"
+      description: "Full access to all resources"
+      permissions:
+        - "users:read"
+        - "users:write"
+        - "users:delete"
+        - "products:read"
+        - "products:write"
+        - "products:delete"
+        - "categories:read"
+        - "categories:write"
+        - "categories:delete"
+        - "attributes:read"
+        - "attributes:write"
+        - "attributes:delete"
+
+    - name: "catalog_manager"
+      description: "Can manage products, categories and attributes"
+      permissions:
+        - "products:read"
+        - "products:write"
+        - "products:delete"
+        - "categories:read"
+        - "categories:write"
+        - "categories:delete"
+        - "attributes:read"
+        - "attributes:write"
+        - "attributes:delete"
+
+    - name: "viewer"
+      description: "Read-only access"
+      permissions:
+        - "users:read"
+        - "products:read"
+        - "categories:read"
+        - "attributes:read"

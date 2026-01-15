@@ -6,10 +6,8 @@ import (
 	"go.uber.org/fx"
 )
 
-// Module provides application layer dependencies
 func Module() fx.Option {
 	return fx.Options(
-		// Command handlers
 		fx.Provide(
 			command.NewLoginHandler,
 			command.NewChangePasswordHandler,
@@ -19,12 +17,10 @@ func Module() fx.Option {
 			command.NewEnableAdminUserHandler,
 			command.NewRefreshTokenHandler,
 		),
-		// Query handlers
 		fx.Provide(
 			query.NewGetAdminUserByIDHandler,
 			query.NewListAdminUsersHandler,
 			query.NewGetRolesHandler,
-			query.NewGetPermissionsHandler,
 		),
 	)
 }

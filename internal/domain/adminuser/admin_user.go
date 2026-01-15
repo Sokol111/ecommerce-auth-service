@@ -10,75 +10,15 @@ import (
 // Role represents an admin user role
 type Role string
 
-const (
-	RoleSuperAdmin     Role = "super_admin"
-	RoleCatalogManager Role = "catalog_manager"
-	RoleViewer         Role = "viewer"
-)
-
-// ValidRoles returns all valid roles
-func ValidRoles() []Role {
-	return []Role{
-		RoleSuperAdmin,
-		RoleCatalogManager,
-		RoleViewer,
-	}
-}
-
-// IsValid checks if the role is valid
-func (r Role) IsValid() bool {
-	for _, valid := range ValidRoles() {
-		if r == valid {
-			return true
-		}
-	}
-	return false
-}
-
 // Permission represents a system permission
 type Permission string
 
-const (
-	// User management
-	PermUsersRead   Permission = "users:read"
-	PermUsersWrite  Permission = "users:write"
-	PermUsersDelete Permission = "users:delete"
-
-	// Products
-	PermProductsRead   Permission = "products:read"
-	PermProductsWrite  Permission = "products:write"
-	PermProductsDelete Permission = "products:delete"
-
-	// Categories
-	PermCategoriesRead   Permission = "categories:read"
-	PermCategoriesWrite  Permission = "categories:write"
-	PermCategoriesDelete Permission = "categories:delete"
-
-	// Attributes
-	PermAttributesRead   Permission = "attributes:read"
-	PermAttributesWrite  Permission = "attributes:write"
-	PermAttributesDelete Permission = "attributes:delete"
-)
-
-// RolePermissions maps roles to their permissions
-var RolePermissions = map[Role][]Permission{
-	RoleSuperAdmin: {
-		PermUsersRead, PermUsersWrite, PermUsersDelete,
-		PermProductsRead, PermProductsWrite, PermProductsDelete,
-		PermCategoriesRead, PermCategoriesWrite, PermCategoriesDelete,
-		PermAttributesRead, PermAttributesWrite, PermAttributesDelete,
-	},
-	RoleCatalogManager: {
-		PermProductsRead, PermProductsWrite, PermProductsDelete,
-		PermCategoriesRead, PermCategoriesWrite, PermCategoriesDelete,
-		PermAttributesRead, PermAttributesWrite, PermAttributesDelete,
-	},
-	RoleViewer: {
-		PermUsersRead,
-		PermProductsRead,
-		PermCategoriesRead,
-		PermAttributesRead,
-	},
+// RolePermissionProvider provides role and permission information
+type RolePermissionProvider interface {
+	GetPermissionsForRole(role Role) []Permission
+	GetValidRoles() []Role
+	IsValidRole(role Role) bool
+	GetRoleDescription(role Role) string
 }
 
 // AdminUser - domain aggregate root for admin panel users
@@ -172,14 +112,9 @@ func (u *AdminUser) Enable() {
 	u.ModifiedAt = time.Now().UTC()
 }
 
-// GetPermissions returns the permissions for this user based on their role
-func (u *AdminUser) GetPermissions() []Permission {
-	return RolePermissions[u.Role]
-}
-
 // HasPermission checks if the user has a specific permission
-func (u *AdminUser) HasPermission(perm Permission) bool {
-	for _, p := range u.GetPermissions() {
+func (u *AdminUser) HasPermission(permissions []Permission, perm Permission) bool {
+	for _, p := range permissions {
 		if p == perm {
 			return true
 		}
@@ -189,7 +124,7 @@ func (u *AdminUser) HasPermission(perm Permission) bool {
 
 // IsSuperAdmin checks if the user is a super admin
 func (u *AdminUser) IsSuperAdmin() bool {
-	return u.Role == RoleSuperAdmin
+	return u.Role == "super_admin"
 }
 
 // FullName returns the user's full name

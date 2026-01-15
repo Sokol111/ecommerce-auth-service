@@ -4,6 +4,11 @@ import (
 	"context"
 
 	"github.com/Sokol111/ecommerce-auth-service-api/gen/httpapi"
+	"github.com/Sokol111/ecommerce-auth-service/internal/application"
+	http "github.com/Sokol111/ecommerce-auth-service/internal/http"
+	"github.com/Sokol111/ecommerce-auth-service/internal/infrastructure/permissions"
+	"github.com/Sokol111/ecommerce-auth-service/internal/infrastructure/persistence/mongo"
+	"github.com/Sokol111/ecommerce-auth-service/internal/infrastructure/security"
 	"github.com/Sokol111/ecommerce-commons/pkg/modules"
 	"github.com/Sokol111/ecommerce-commons/pkg/swaggerui"
 	"go.uber.org/fx"
@@ -18,6 +23,17 @@ var AppModules = fx.Options(
 	modules.NewObservabilityModule(),
 	modules.NewMessagingModule(),
 	swaggerui.NewSwaggerModule(swaggerui.SwaggerConfig{OpenAPIContent: httpapi.OpenAPIDoc}),
+
+	// Application
+	application.Module(),
+
+	// Infrastructure
+	permissions.Module(),
+	security.Module(),
+	mongo.Module(),
+
+	// HTTP
+	http.NewHttpHandlerModule(),
 )
 
 func main() {

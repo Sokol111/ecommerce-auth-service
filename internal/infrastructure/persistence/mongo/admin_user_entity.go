@@ -6,7 +6,6 @@ import (
 	"github.com/Sokol111/ecommerce-auth-service/internal/domain/adminuser"
 )
 
-// adminUserEntity represents the MongoDB document structure for admin users
 type adminUserEntity struct {
 	ID           string         `bson:"_id"`
 	Version      int            `bson:"version"`

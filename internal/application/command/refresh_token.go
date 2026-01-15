@@ -59,14 +59,14 @@ func (h *refreshTokenHandler) Handle(ctx context.Context, cmd RefreshTokenComman
 		return nil, adminuser.ErrAdminUserDisabled
 	}
 
-	accessToken, refreshToken, expiresIn, err := h.tokenGenerator.GenerateTokenPair(user)
+	accessToken, _, expiresIn, err := h.tokenGenerator.GenerateTokenPair(user)
 	if err != nil {
 		return nil, err
 	}
 
 	return &RefreshTokenResult{
 		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
+		RefreshToken: cmd.RefreshToken,
 		ExpiresIn:    expiresIn,
 	}, nil
 }

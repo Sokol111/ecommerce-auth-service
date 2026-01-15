@@ -28,7 +28,7 @@ type authHandler struct {
 	getUserByIDHandler    query.GetAdminUserByIDHandler
 	listUsersHandler      query.ListAdminUsersHandler
 	getRolesHandler       query.GetRolesHandler
-	getPermissionsHandler query.GetPermissionsHandler
+	permissionProvider    adminuser.RolePermissionProvider
 }
 
 func newAuthHandler(
@@ -42,7 +42,7 @@ func newAuthHandler(
 	getUserByIDHandler query.GetAdminUserByIDHandler,
 	listUsersHandler query.ListAdminUsersHandler,
 	getRolesHandler query.GetRolesHandler,
-	getPermissionsHandler query.GetPermissionsHandler,
+	permissionProvider adminuser.RolePermissionProvider,
 ) httpapi.Handler {
 	return &authHandler{
 		loginHandler:          loginHandler,
@@ -55,7 +55,7 @@ func newAuthHandler(
 		getUserByIDHandler:    getUserByIDHandler,
 		listUsersHandler:      listUsersHandler,
 		getRolesHandler:       getRolesHandler,
-		getPermissionsHandler: getPermissionsHandler,
+		permissionProvider:    permissionProvider,
 	}
 }
 
@@ -69,46 +69,20 @@ func toOptDateTime(t *time.Time) httpapi.OptDateTime {
 	return httpapi.NewOptDateTime(*t)
 }
 
-func toAdminRole(role adminuser.Role) httpapi.AdminRole {
-	switch role {
-	case adminuser.RoleSuperAdmin:
-		return httpapi.AdminRoleSuperAdmin
-	case adminuser.RoleCatalogManager:
-		return httpapi.AdminRoleCatalogManager
-	case adminuser.RoleViewer:
-		return httpapi.AdminRoleViewer
-	default:
-		return httpapi.AdminRoleViewer
-	}
-}
-
-func toDomainRole(role httpapi.AdminRole) adminuser.Role {
-	switch role {
-	case httpapi.AdminRoleSuperAdmin:
-		return adminuser.RoleSuperAdmin
-	case httpapi.AdminRoleCatalogManager:
-		return adminuser.RoleCatalogManager
-	case httpapi.AdminRoleViewer:
-		return adminuser.RoleViewer
-	default:
-		return adminuser.RoleViewer
-	}
-}
-
 func toPermissions(perms []adminuser.Permission) []httpapi.Permission {
 	return lo.Map(perms, func(p adminuser.Permission, _ int) httpapi.Permission {
 		return httpapi.Permission(p)
 	})
 }
 
-func toAdminUserProfile(user *adminuser.AdminUser) *httpapi.AdminUserProfile {
+func toAdminUserProfile(user *adminuser.AdminUser, permissions []adminuser.Permission) *httpapi.AdminUserProfile {
 	return &httpapi.AdminUserProfile{
 		ID:          uuid.MustParse(user.ID),
 		Email:       user.Email,
 		FirstName:   user.FirstName,
 		LastName:    user.LastName,
-		Role:        toAdminRole(user.Role),
-		Permissions: toPermissions(user.GetPermissions()),
+		Role:        httpapi.AdminRole(user.Role),
+		Permissions: toPermissions(permissions),
 		Enabled:     user.Enabled,
 		CreatedAt:   user.CreatedAt,
 		LastLoginAt: toOptDateTime(user.LastLoginAt),
@@ -121,7 +95,7 @@ func toAdminUserResponse(user *adminuser.AdminUser) *httpapi.AdminUserResponse {
 		Email:       user.Email,
 		FirstName:   user.FirstName,
 		LastName:    user.LastName,
-		Role:        toAdminRole(user.Role),
+		Role:        httpapi.AdminRole(user.Role),
 		Enabled:     user.Enabled,
 		CreatedAt:   user.CreatedAt,
 		ModifiedAt:  httpapi.NewOptDateTime(user.ModifiedAt),
@@ -159,7 +133,7 @@ func (h *authHandler) AdminLogin(ctx context.Context, req *httpapi.LoginRequest)
 		RefreshToken: result.RefreshToken,
 		ExpiresIn:    result.ExpiresIn,
 		TokenType:    "Bearer",
-		User:         *toAdminUserProfile(result.User),
+		User:         *toAdminUserProfile(result.User, h.permissionProvider.GetPermissionsForRole(result.User.Role)),
 	}, nil
 }
 
@@ -179,7 +153,7 @@ func (h *authHandler) AdminGetProfile(ctx context.Context) (httpapi.AdminGetProf
 		return nil, err
 	}
 
-	return toAdminUserProfile(user), nil
+	return toAdminUserProfile(user, h.permissionProvider.GetPermissionsForRole(user.Role)), nil
 }
 
 // AdminChangePassword implements adminChangePassword operation.
@@ -220,7 +194,7 @@ func (h *authHandler) AdminUserCreate(ctx context.Context, req *httpapi.AdminUse
 		Password:  req.Password,
 		FirstName: req.FirstName,
 		LastName:  req.LastName,
-		Role:      toDomainRole(req.Role),
+		Role:      adminuser.Role(req.Role),
 	})
 
 	if errors.Is(err, adminuser.ErrEmailAlreadyExists) {
@@ -250,7 +224,7 @@ func (h *authHandler) AdminUserUpdate(ctx context.Context, req *httpapi.AdminUse
 		cmd.LastName = &req.LastName.Value
 	}
 	if req.Role.IsSet() {
-		role := toDomainRole(req.Role.Value)
+		role := adminuser.Role(req.Role.Value)
 		cmd.Role = &role
 	}
 
@@ -294,7 +268,7 @@ func (h *authHandler) AdminUserList(ctx context.Context, params httpapi.AdminUse
 	}
 
 	if params.Role.IsSet() {
-		role := toDomainRole(params.Role.Value)
+		role := adminuser.Role(params.Role.Value)
 		q.Role = &role
 	}
 	if params.Enabled.IsSet() {
@@ -406,7 +380,7 @@ func (h *authHandler) GetRoles(ctx context.Context) (httpapi.GetRolesRes, error)
 
 	items := lo.Map(roles, func(r query.RoleInfo, _ int) httpapi.RoleInfo {
 		return httpapi.RoleInfo{
-			Name:        toAdminRole(r.Name),
+			Name:        httpapi.AdminRole(r.Name),
 			Description: r.Description,
 			Permissions: toPermissions(r.Permissions),
 		}
@@ -414,23 +388,6 @@ func (h *authHandler) GetRoles(ctx context.Context) (httpapi.GetRolesRes, error)
 
 	return &httpapi.RolesResponse{
 		Roles: items,
-	}, nil
-}
-
-// GetPermissions implements getPermissions operation.
-func (h *authHandler) GetPermissions(ctx context.Context) (httpapi.GetPermissionsRes, error) {
-	permissions := h.getPermissionsHandler.Handle(ctx)
-
-	items := lo.Map(permissions, func(p query.PermissionInfo, _ int) httpapi.PermissionInfo {
-		return httpapi.PermissionInfo{
-			Name:        httpapi.Permission(p.Name),
-			Description: p.Description,
-			Resource:    p.Resource,
-		}
-	})
-
-	return &httpapi.PermissionsResponse{
-		Permissions: items,
 	}, nil
 }
 

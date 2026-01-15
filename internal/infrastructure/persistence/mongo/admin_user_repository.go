@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Sokol111/ecommerce-auth-service/internal/domain/adminuser"
+	"github.com/Sokol111/ecommerce-commons/pkg/persistence"
 	commonsmongo "github.com/Sokol111/ecommerce-commons/pkg/persistence/mongo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -40,7 +41,7 @@ func (r *adminUserRepository) FindByEmail(ctx context.Context, email string) (*a
 	}
 
 	if len(result.Items) == 0 {
-		return nil, adminuser.ErrAdminUserNotFound
+		return nil, persistence.ErrEntityNotFound
 	}
 
 	return result.Items[0], nil
@@ -81,7 +82,6 @@ func (r *adminUserRepository) FindList(ctx context.Context, query adminuser.List
 	return r.FindWithOptions(ctx, opts)
 }
 
-// Insert overrides generic Insert to handle duplicate email error
 func (r *adminUserRepository) Insert(ctx context.Context, u *adminuser.AdminUser) error {
 	err := r.GenericRepository.Insert(ctx, u)
 	if mongo.IsDuplicateKeyError(err) {
