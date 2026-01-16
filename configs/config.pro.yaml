@@ -16,3 +16,11 @@ mongo:
 observability:
   tracing-enabled: true
   otel-collector-endpoint: ""
+
+# Initial super admin user (created on first startup if not exists)
+# Password should be set via ADMIN_INITIAL_USER_PASSWORD environment variable
+admin:
+  initial-user:
+    enabled: true
+    first-name: "Super"
+    last-name: "Admin"

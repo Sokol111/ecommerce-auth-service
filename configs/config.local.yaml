@@ -29,6 +29,15 @@ token:
   access-token-duration: 15m
   refresh-token-duration: 48h
 
+# Initial super admin user (created on first startup if not exists)
+admin:
+  initial-user:
+    enabled: true
+    email: "admin@localhost"
+    password: "pass"
+    first-name: "Super"
+    last-name: "Admin"
+
 permissions:
   roles:
     - name: "super_admin"

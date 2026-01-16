@@ -9,6 +9,7 @@ import (
 	"github.com/Sokol111/ecommerce-auth-service/internal/infrastructure/permissions"
 	"github.com/Sokol111/ecommerce-auth-service/internal/infrastructure/persistence/mongo"
 	"github.com/Sokol111/ecommerce-auth-service/internal/infrastructure/security"
+	"github.com/Sokol111/ecommerce-auth-service/internal/infrastructure/seeder"
 	"github.com/Sokol111/ecommerce-commons/pkg/modules"
 	"github.com/Sokol111/ecommerce-commons/pkg/swaggerui"
 	"go.uber.org/fx"
@@ -31,6 +32,7 @@ var AppModules = fx.Options(
 	permissions.Module(),
 	security.Module(),
 	mongo.Module(),
+	seeder.Module(),
 
 	// HTTP
 	http.NewHttpHandlerModule(),
