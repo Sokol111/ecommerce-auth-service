@@ -12,10 +12,11 @@ type LoginCommand struct {
 }
 
 type LoginResult struct {
-	User         *adminuser.AdminUser
-	AccessToken  string
-	RefreshToken string
-	ExpiresIn    int
+	User             *adminuser.AdminUser
+	AccessToken      string
+	RefreshToken     string
+	ExpiresIn        int
+	RefreshExpiresIn int
 }
 
 type LoginHandler interface {
@@ -59,15 +60,16 @@ func (h *loginHandler) Handle(ctx context.Context, cmd LoginCommand) (*LoginResu
 		return nil, err
 	}
 
-	accessToken, refreshToken, expiresIn, err := h.tokenGenerator.GenerateTokenPair(user)
+	accessToken, refreshToken, expiresIn, refreshExpiresIn, err := h.tokenGenerator.GenerateTokenPair(user)
 	if err != nil {
 		return nil, err
 	}
 
 	return &LoginResult{
-		User:         user,
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-		ExpiresIn:    expiresIn,
+		User:             user,
+		AccessToken:      accessToken,
+		RefreshToken:     refreshToken,
+		ExpiresIn:        expiresIn,
+		RefreshExpiresIn: refreshExpiresIn,
 	}, nil
 }

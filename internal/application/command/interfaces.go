@@ -15,6 +15,6 @@ type PasswordHasher interface {
 // TokenGenerator handles token generation operations
 type TokenGenerator interface {
 	// GenerateTokenPair generates an access token and refresh token pair
-	// Returns: accessToken, refreshToken, expiresInSeconds, error
-	GenerateTokenPair(user *adminuser.AdminUser) (string, string, int, error)
+	// Returns: accessToken, refreshToken, expiresInSeconds, refreshExpiresInSeconds, error
+	GenerateTokenPair(user *adminuser.AdminUser) (string, string, int, int, error)
 }

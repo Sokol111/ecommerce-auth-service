@@ -129,11 +129,12 @@ func (h *authHandler) AdminLogin(ctx context.Context, req *httpapi.LoginRequest)
 	}
 
 	return &httpapi.AdminAuthResponse{
-		AccessToken:  result.AccessToken,
-		RefreshToken: result.RefreshToken,
-		ExpiresIn:    result.ExpiresIn,
-		TokenType:    "Bearer",
-		User:         *toAdminUserProfile(result.User, h.permissionProvider.GetPermissionsForRole(result.User.Role)),
+		AccessToken:      result.AccessToken,
+		RefreshToken:     result.RefreshToken,
+		ExpiresIn:        result.ExpiresIn,
+		RefreshExpiresIn: result.RefreshExpiresIn,
+		TokenType:        "Bearer",
+		User:             *toAdminUserProfile(result.User, h.permissionProvider.GetPermissionsForRole(result.User.Role)),
 	}, nil
 }
 
@@ -368,9 +369,10 @@ func (h *authHandler) TokenRefresh(ctx context.Context, req *httpapi.TokenRefres
 	}
 
 	return &httpapi.TokenRefreshResponse{
-		AccessToken:  result.AccessToken,
-		RefreshToken: result.RefreshToken,
-		ExpiresIn:    result.ExpiresIn,
+		AccessToken:      result.AccessToken,
+		RefreshToken:     result.RefreshToken,
+		ExpiresIn:        result.ExpiresIn,
+		RefreshExpiresIn: result.RefreshExpiresIn,
 	}, nil
 }
 

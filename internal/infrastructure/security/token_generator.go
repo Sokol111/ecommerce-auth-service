@@ -46,19 +46,20 @@ func (s *tokenGenerator) GetPublicKeyHex() string {
 }
 
 // GenerateTokenPair generates access and refresh tokens for a user
-func (s *tokenGenerator) GenerateTokenPair(user *adminuser.AdminUser) (string, string, int, error) {
+func (s *tokenGenerator) GenerateTokenPair(user *adminuser.AdminUser) (string, string, int, int, error) {
 	accessToken, err := s.generateToken(user, s.config.AccessTokenDuration, "access")
 	if err != nil {
-		return "", "", 0, err
+		return "", "", 0, 0, err
 	}
 
 	refreshToken, err := s.generateToken(user, s.config.RefreshTokenDuration, "refresh")
 	if err != nil {
-		return "", "", 0, err
+		return "", "", 0, 0, err
 	}
 
 	expiresIn := int(s.config.AccessTokenDuration.Seconds())
-	return accessToken, refreshToken, expiresIn, nil
+	refreshExpiresIn := int(s.config.RefreshTokenDuration.Seconds())
+	return accessToken, refreshToken, expiresIn, refreshExpiresIn, nil
 }
 
 func (s *tokenGenerator) generateToken(user *adminuser.AdminUser, duration time.Duration, tokenType string) (string, error) {

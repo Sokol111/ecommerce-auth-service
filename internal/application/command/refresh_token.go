@@ -12,9 +12,10 @@ type RefreshTokenCommand struct {
 }
 
 type RefreshTokenResult struct {
-	AccessToken  string
-	RefreshToken string
-	ExpiresIn    int
+	AccessToken      string
+	RefreshToken     string
+	ExpiresIn        int
+	RefreshExpiresIn int
 }
 
 type RefreshTokenHandler interface {
@@ -59,14 +60,15 @@ func (h *refreshTokenHandler) Handle(ctx context.Context, cmd RefreshTokenComman
 		return nil, adminuser.ErrAdminUserDisabled
 	}
 
-	accessToken, _, expiresIn, err := h.tokenGenerator.GenerateTokenPair(user)
+	accessToken, _, expiresIn, refreshExpiresIn, err := h.tokenGenerator.GenerateTokenPair(user)
 	if err != nil {
 		return nil, err
 	}
 
 	return &RefreshTokenResult{
-		AccessToken:  accessToken,
-		RefreshToken: cmd.RefreshToken,
-		ExpiresIn:    expiresIn,
+		AccessToken:      accessToken,
+		RefreshToken:     cmd.RefreshToken,
+		ExpiresIn:        expiresIn,
+		RefreshExpiresIn: refreshExpiresIn,
 	}, nil
 }
