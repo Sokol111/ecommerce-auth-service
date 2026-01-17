@@ -103,8 +103,5 @@ func (s *Seeder) validateConfig() error {
 	if s.cfg.Password == "" {
 		return errors.New("initial admin password is required")
 	}
-	if len(s.cfg.Password) < 8 {
-		return errors.New("initial admin password must be at least 8 characters")
-	}
 	return nil
 }

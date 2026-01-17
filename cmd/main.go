@@ -22,7 +22,7 @@ var AppModules = fx.Options(
 	modules.NewPersistenceModule(),
 	modules.NewHTTPModule(),
 	modules.NewObservabilityModule(),
-	modules.NewMessagingModule(),
+	// modules.NewMessagingModule(),
 	swaggerui.NewSwaggerModule(swaggerui.SwaggerConfig{OpenAPIContent: httpapi.OpenAPIDoc}),
 
 	// Application
