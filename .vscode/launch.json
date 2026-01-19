@@ -17,6 +17,19 @@
             "args": []
         },
         {
+            "name": "Generate Service Token",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/cmd/servicetoken",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "-private-key=e9bc26b8119fa3ccd616e3bd05603507fd308cb30a0a99c4b858c621dd147f1beb6ebefd6a2b0a304d43c2ccca329aef0a1439d429dbe8ca9b6190622ce38341",
+                "-name=product-query-service",
+                "-duration=87600h"
+            ]
+        },
+        {
             "name": "Attach to K3D (auth-service)",
             "type": "go",
             "request": "attach",
