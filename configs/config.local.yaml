@@ -77,3 +77,10 @@ permissions:
         - "products:read"
         - "categories:read"
         - "attributes:read"
+
+    - name: "service_account"
+      description: "Internal service-to-service communication"
+      permissions:
+        - "products:read"
+        - "categories:read"
+        - "attributes:read"
