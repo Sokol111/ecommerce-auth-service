@@ -104,12 +104,6 @@ func main() {
 	fmt.Println()
 	fmt.Println("Token:")
 	fmt.Println(signedToken)
-	fmt.Println()
-	fmt.Println("Add to your service config:")
-	fmt.Println()
-	fmt.Println("security:")
-	fmt.Println("  token:")
-	fmt.Printf("    service-token: \"%s\"\n", signedToken)
 }
 
 func splitAndTrim(s, sep string) []string {
