@@ -1,26 +1,86 @@
+# =============================================================================
+# Auth Service - Production Configuration
+# =============================================================================
+# Values can be overridden by environment variables.
+# Viper automatically maps: mongo.host -> MONGO_HOST, etc.
+
 logger:
-  level: "debug"
+  level: info
+  development: false
 
 server:
   port: 8080
 
 mongo:
-  host: ""
+  host: mongo
   port: 27017
+  username: admin
+  password: ""
+  database: auth
   replica-set: rs0
-  database: "auth"
   migrations:
     enabled: true
     auto-migrate: true
 
 observability:
-  tracing-enabled: true
-  otel-collector-endpoint: ""
+  otel-collector-endpoint: http://otel-collector:4317
+  tracing:
+    enabled: true
+  metrics:
+    enabled: true
 
-# Initial super admin user (created on first startup if not exists)
-# Password should be set via ADMIN_INITIAL_USER_PASSWORD environment variable
+security:
+  token:
+    public-key: ""
+
+token:
+  private-key: ""
+  access-token-duration: 15m
+  refresh-token-duration: 168h
+
 admin:
   initial-user:
     enabled: true
-    first-name: "Super"
-    last-name: "Admin"
+    email: admin@example.com
+    password: ""
+    first-name: Super
+    last-name: Admin
+
+permissions:
+  roles:
+    - name: super_admin
+      description: Full access to all resources
+      permissions:
+        - "users:read"
+        - "users:write"
+        - "users:delete"
+        - "products:read"
+        - "products:write"
+        - "products:delete"
+        - "categories:read"
+        - "categories:write"
+        - "categories:delete"
+        - "attributes:read"
+        - "attributes:write"
+        - "attributes:delete"
+
+    - name: catalog_manager
+      description: Can manage products, categories and attributes
+      permissions:
+        - "products:read"
+        - "products:write"
+        - "products:delete"
+        - "categories:read"
+        - "categories:write"
+        - "categories:delete"
+        - "attributes:read"
+        - "attributes:write"
+        - "attributes:delete"
+
+    - name: viewer
+      description: Read-only access
+      permissions:
+        - "users:read"
+        - "products:read"
+        - "categories:read"
+        - "attributes:read"
