@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/samber/lo"
 )
 
 // Role represents an admin user role
@@ -114,12 +115,7 @@ func (u *AdminUser) Enable() {
 
 // HasPermission checks if the user has a specific permission
 func (u *AdminUser) HasPermission(permissions []Permission, perm Permission) bool {
-	for _, p := range permissions {
-		if p == perm {
-			return true
-		}
-	}
-	return false
+	return lo.Contains(permissions, perm)
 }
 
 // IsSuperAdmin checks if the user is a super admin

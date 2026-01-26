@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Sokol111/ecommerce-auth-service/internal/domain/adminuser"
+	"github.com/samber/lo"
 )
 
 // registry implements adminuser.RolePermissionProvider
@@ -39,11 +40,7 @@ func (r *registry) GetPermissionsForRole(role adminuser.Role) []adminuser.Permis
 }
 
 func (r *registry) GetValidRoles() []adminuser.Role {
-	roles := make([]adminuser.Role, 0, len(r.rolePermissions))
-	for role := range r.rolePermissions {
-		roles = append(roles, role)
-	}
-	return roles
+	return lo.Keys(r.rolePermissions)
 }
 
 func (r *registry) IsValidRole(role adminuser.Role) bool {

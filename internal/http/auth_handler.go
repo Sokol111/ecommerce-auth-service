@@ -284,10 +284,9 @@ func (h *authHandler) AdminUserList(ctx context.Context, params httpapi.AdminUse
 		return nil, err
 	}
 
-	items := make([]httpapi.AdminUserResponse, len(result.Items))
-	for i, user := range result.Items {
-		items[i] = *toAdminUserResponse(user)
-	}
+	items := lo.Map(result.Items, func(user *adminuser.AdminUser, _ int) httpapi.AdminUserResponse {
+		return *toAdminUserResponse(user)
+	})
 
 	return &httpapi.AdminUserListResponse{
 		Items: items,

@@ -8,6 +8,7 @@ import (
 	"aidanwoods.dev/go-paseto"
 	"github.com/Sokol111/ecommerce-auth-service/internal/application/command"
 	"github.com/Sokol111/ecommerce-auth-service/internal/domain/adminuser"
+	"github.com/samber/lo"
 )
 
 // tokenGenerator implements TokenGenerator using PASETO v4 Public (asymmetric)
@@ -67,10 +68,9 @@ func (s *tokenGenerator) generateToken(user *adminuser.AdminUser, duration time.
 
 	// Get permissions for the user's role
 	permissions := s.permissionProvider.GetPermissionsForRole(user.Role)
-	permStrings := make([]string, len(permissions))
-	for i, p := range permissions {
-		permStrings[i] = string(p)
-	}
+	permStrings := lo.Map(permissions, func(p adminuser.Permission, _ int) string {
+		return string(p)
+	})
 
 	tk := paseto.NewToken()
 	tk.SetIssuedAt(now)
