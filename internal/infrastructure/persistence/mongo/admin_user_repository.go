@@ -52,6 +52,17 @@ func (r *adminUserRepository) ExistsByEmail(ctx context.Context, email string) (
 }
 
 func (r *adminUserRepository) FindList(ctx context.Context, query adminuser.ListQuery) (*commonsmongo.PageResult[adminuser.AdminUser], error) {
+	opts := commonsmongo.QueryOptions{
+		Filter: buildListFilter(query),
+		Page:   query.Page,
+		Size:   query.Size,
+		Sort:   bson.D{{Key: "createdAt", Value: -1}},
+	}
+
+	return r.FindWithOptions(ctx, opts)
+}
+
+func buildListFilter(query adminuser.ListQuery) bson.D {
 	filter := bson.D{}
 
 	if query.Role != nil {
@@ -72,14 +83,7 @@ func (r *adminUserRepository) FindList(ctx context.Context, query adminuser.List
 		})
 	}
 
-	opts := commonsmongo.QueryOptions{
-		Filter: filter,
-		Page:   query.Page,
-		Size:   query.Size,
-		Sort:   bson.D{{Key: "createdAt", Value: -1}},
-	}
-
-	return r.FindWithOptions(ctx, opts)
+	return filter
 }
 
 func (r *adminUserRepository) Insert(ctx context.Context, u *adminuser.AdminUser) error {
