@@ -18,24 +18,21 @@ import (
 )
 
 type authHandler struct {
-	loginHandler          command.LoginHandler
-	changePasswordHandler command.ChangePasswordHandler
-	createUserHandler     command.CreateAdminUserHandler
-	updateUserHandler     command.UpdateAdminUserHandler
-	disableUserHandler    command.DisableAdminUserHandler
-	enableUserHandler     command.EnableAdminUserHandler
-	refreshTokenHandler   command.RefreshTokenHandler
-	getUserByIDHandler    query.GetAdminUserByIDHandler
-	listUsersHandler      query.ListAdminUsersHandler
-	getRolesHandler       query.GetRolesHandler
-	permissionProvider    adminuser.RolePermissionProvider
+	loginHandler        command.LoginHandler
+	createUserHandler   command.CreateAdminUserHandler
+	disableUserHandler  command.DisableAdminUserHandler
+	enableUserHandler   command.EnableAdminUserHandler
+	refreshTokenHandler command.RefreshTokenHandler
+	getUserByIDHandler  query.GetAdminUserByIDHandler
+	listUsersHandler    query.ListAdminUsersHandler
+	getRolesHandler     query.GetRolesHandler
+	permissionProvider  adminuser.RolePermissionProvider
+	loginRateLimiter    *LoginRateLimiter
 }
 
 func newAuthHandler(
 	loginHandler command.LoginHandler,
-	changePasswordHandler command.ChangePasswordHandler,
 	createUserHandler command.CreateAdminUserHandler,
-	updateUserHandler command.UpdateAdminUserHandler,
 	disableUserHandler command.DisableAdminUserHandler,
 	enableUserHandler command.EnableAdminUserHandler,
 	refreshTokenHandler command.RefreshTokenHandler,
@@ -43,19 +40,19 @@ func newAuthHandler(
 	listUsersHandler query.ListAdminUsersHandler,
 	getRolesHandler query.GetRolesHandler,
 	permissionProvider adminuser.RolePermissionProvider,
+	loginRateLimiter *LoginRateLimiter,
 ) httpapi.Handler {
 	return &authHandler{
-		loginHandler:          loginHandler,
-		changePasswordHandler: changePasswordHandler,
-		createUserHandler:     createUserHandler,
-		updateUserHandler:     updateUserHandler,
-		disableUserHandler:    disableUserHandler,
-		enableUserHandler:     enableUserHandler,
-		refreshTokenHandler:   refreshTokenHandler,
-		getUserByIDHandler:    getUserByIDHandler,
-		listUsersHandler:      listUsersHandler,
-		getRolesHandler:       getRolesHandler,
-		permissionProvider:    permissionProvider,
+		loginHandler:        loginHandler,
+		createUserHandler:   createUserHandler,
+		disableUserHandler:  disableUserHandler,
+		enableUserHandler:   enableUserHandler,
+		refreshTokenHandler: refreshTokenHandler,
+		getUserByIDHandler:  getUserByIDHandler,
+		listUsersHandler:    listUsersHandler,
+		getRolesHandler:     getRolesHandler,
+		permissionProvider:  permissionProvider,
+		loginRateLimiter:    loginRateLimiter,
 	}
 }
 
@@ -105,6 +102,16 @@ func toAdminUserResponse(user *adminuser.AdminUser) *httpapi.AdminUserResponse {
 
 // AdminLogin implements adminLogin operation.
 func (h *authHandler) AdminLogin(ctx context.Context, req *httpapi.LoginRequest) (httpapi.AdminLoginRes, error) {
+	// Rate limit by email
+	if !h.loginRateLimiter.Allow(ctx, req.Email) {
+		return &httpapi.AdminLoginTooManyRequests{
+			Status: 429,
+			Type:   *aboutBlankURL,
+			Title:  "Too many login attempts",
+			Detail: httpapi.NewOptString("Please try again later"),
+		}, nil
+	}
+
 	result, err := h.loginHandler.Handle(ctx, command.LoginCommand{
 		Email:    req.Email,
 		Password: req.Password,
@@ -157,37 +164,6 @@ func (h *authHandler) AdminGetProfile(ctx context.Context) (httpapi.AdminGetProf
 	return toAdminUserProfile(user, h.permissionProvider.GetPermissionsForRole(user.Role)), nil
 }
 
-// AdminChangePassword implements adminChangePassword operation.
-func (h *authHandler) AdminChangePassword(ctx context.Context, req *httpapi.ChangePasswordRequest) (httpapi.AdminChangePasswordRes, error) {
-	claims, err := h.getCurrentUserClaims(ctx)
-	if err != nil {
-		return &httpapi.AdminChangePasswordUnauthorized{
-			Status: 401,
-			Type:   *aboutBlankURL,
-			Title:  "Unauthorized",
-		}, nil
-	}
-
-	err = h.changePasswordHandler.Handle(ctx, command.ChangePasswordCommand{
-		UserID:          claims.UserID,
-		CurrentPassword: req.CurrentPassword,
-		NewPassword:     req.NewPassword,
-	})
-
-	if errors.Is(err, adminuser.ErrInvalidCredentials) {
-		return &httpapi.AdminChangePasswordUnauthorized{
-			Status: 401,
-			Type:   *aboutBlankURL,
-			Title:  "Wrong current password",
-		}, nil
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	return &httpapi.AdminChangePasswordNoContent{}, nil
-}
-
 // AdminUserCreate implements adminUserCreate operation.
 func (h *authHandler) AdminUserCreate(ctx context.Context, req *httpapi.AdminUserCreateRequest) (httpapi.AdminUserCreateRes, error) {
 	user, err := h.createUserHandler.Handle(ctx, command.CreateAdminUserCommand{
@@ -203,38 +179,6 @@ func (h *authHandler) AdminUserCreate(ctx context.Context, req *httpapi.AdminUse
 			Status: 409,
 			Type:   *aboutBlankURL,
 			Title:  "Email already exists",
-		}, nil
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	return toAdminUserResponse(user), nil
-}
-
-// AdminUserUpdate implements adminUserUpdate operation.
-func (h *authHandler) AdminUserUpdate(ctx context.Context, req *httpapi.AdminUserUpdateRequest) (httpapi.AdminUserUpdateRes, error) {
-	cmd := command.UpdateAdminUserCommand{
-		ID: req.ID.String(),
-	}
-
-	if req.FirstName.IsSet() {
-		cmd.FirstName = &req.FirstName.Value
-	}
-	if req.LastName.IsSet() {
-		cmd.LastName = &req.LastName.Value
-	}
-	if req.Role.IsSet() {
-		role := adminuser.Role(req.Role.Value)
-		cmd.Role = &role
-	}
-
-	user, err := h.updateUserHandler.Handle(ctx, cmd)
-	if errors.Is(err, persistence.ErrEntityNotFound) {
-		return &httpapi.AdminUserUpdateNotFound{
-			Status: 404,
-			Type:   *aboutBlankURL,
-			Title:  "User not found",
 		}, nil
 	}
 	if err != nil {
