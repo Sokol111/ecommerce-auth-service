@@ -2,7 +2,6 @@ package http
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/ogen-go/ogen/middleware"
 	"github.com/ogen-go/ogen/ogenerrors"
@@ -16,6 +15,7 @@ import (
 func NewHttpHandlerModule() fx.Option {
 	return fx.Options(
 		fx.Provide(
+			newRateLimitConfig,
 			newAuthHandler,
 			newSecurityHandler,
 			newOgenServer,
@@ -25,9 +25,9 @@ func NewHttpHandlerModule() fx.Option {
 	)
 }
 
-// newLoginRateLimiter creates rate limiter: 5 requests per minute
-func newLoginRateLimiter() *LoginRateLimiter {
-	return NewLoginRateLimiter(5, time.Minute)
+// newLoginRateLimiter creates rate limiter from config
+func newLoginRateLimiter(cfg RateLimitConfig) *LoginRateLimiter {
+	return NewLoginRateLimiter(cfg.LoginTokens, cfg.LoginInterval)
 }
 
 func newOgenServer(

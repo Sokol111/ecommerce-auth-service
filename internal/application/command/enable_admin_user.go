@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"github.com/Sokol111/ecommerce-auth-service/internal/domain/adminuser"
+	"github.com/Sokol111/ecommerce-commons/pkg/core/logger"
+	"go.uber.org/zap"
 )
 
 type EnableAdminUserCommand struct {
@@ -23,6 +25,8 @@ func NewEnableAdminUserHandler(repo adminuser.Repository) EnableAdminUserHandler
 }
 
 func (h *enableAdminUserHandler) Handle(ctx context.Context, cmd EnableAdminUserCommand) error {
+	log := logger.Get(ctx).With(zap.String("target_user_id", cmd.ID))
+
 	user, err := h.repo.FindByID(ctx, cmd.ID)
 	if err != nil {
 		return err
@@ -31,5 +35,10 @@ func (h *enableAdminUserHandler) Handle(ctx context.Context, cmd EnableAdminUser
 	user.Enable()
 
 	_, err = h.repo.Update(ctx, user)
-	return err
+	if err != nil {
+		return err
+	}
+
+	log.Info("admin user enabled", zap.String("email", user.Email))
+	return nil
 }

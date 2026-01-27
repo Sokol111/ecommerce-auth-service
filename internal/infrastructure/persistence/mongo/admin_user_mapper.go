@@ -14,17 +14,18 @@ func newAdminUserMapper() *adminUserMapper {
 
 func (m *adminUserMapper) ToEntity(u *adminuser.AdminUser) *adminUserEntity {
 	return &adminUserEntity{
-		ID:           u.ID,
-		Version:      u.Version,
-		Email:        u.Email,
-		PasswordHash: u.PasswordHash,
-		FirstName:    u.FirstName,
-		LastName:     u.LastName,
-		Role:         u.Role,
-		Enabled:      u.Enabled,
-		CreatedAt:    u.CreatedAt,
-		ModifiedAt:   u.ModifiedAt,
-		LastLoginAt:  u.LastLoginAt,
+		ID:             u.ID,
+		Version:        u.Version,
+		Email:          u.Email,
+		PasswordHash:   u.PasswordHash,
+		FirstName:      u.FirstName,
+		LastName:       u.LastName,
+		Role:           u.Role,
+		Enabled:        u.Enabled,
+		RefreshTokenID: u.RefreshTokenID,
+		CreatedAt:      u.CreatedAt,
+		ModifiedAt:     u.ModifiedAt,
+		LastLoginAt:    u.LastLoginAt,
 	}
 }
 
@@ -44,6 +45,7 @@ func (m *adminUserMapper) ToDomain(e *adminUserEntity) *adminuser.AdminUser {
 		e.LastName,
 		e.Role,
 		e.Enabled,
+		e.RefreshTokenID,
 		e.CreatedAt.UTC(),
 		e.ModifiedAt.UTC(),
 		lastLoginAt,

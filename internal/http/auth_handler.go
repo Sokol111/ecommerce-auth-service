@@ -303,6 +303,14 @@ func (h *authHandler) TokenRefresh(ctx context.Context, req *httpapi.TokenRefres
 		RefreshToken: req.RefreshToken,
 	})
 
+	if errors.Is(err, command.ErrRefreshTokenReused) {
+		return &httpapi.TokenRefreshUnauthorized{
+			Status: 401,
+			Type:   *aboutBlankURL,
+			Title:  "Token reused",
+			Detail: httpapi.NewOptString("This refresh token has already been used. All sessions have been invalidated for security. Please log in again."),
+		}, nil
+	}
 	if err != nil {
 		return &httpapi.TokenRefreshUnauthorized{
 			Status: 401,

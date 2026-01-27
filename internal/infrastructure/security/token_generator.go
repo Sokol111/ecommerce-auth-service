@@ -8,6 +8,7 @@ import (
 	"aidanwoods.dev/go-paseto"
 	"github.com/Sokol111/ecommerce-auth-service/internal/application/command"
 	"github.com/Sokol111/ecommerce-auth-service/internal/domain/adminuser"
+	"github.com/google/uuid"
 	"github.com/samber/lo"
 )
 
@@ -47,26 +48,27 @@ func (s *tokenGenerator) GetPublicKeyHex() string {
 }
 
 // GenerateTokenPair generates access and refresh tokens for a user
-func (s *tokenGenerator) GenerateTokenPair(user *adminuser.AdminUser) (string, string, int, int, error) {
-	accessToken, err := s.generateToken(user, s.config.AccessTokenDuration, "access")
+func (s *tokenGenerator) GenerateTokenPair(user *adminuser.AdminUser) (string, string, string, int, int, error) {
+	accessToken, err := s.generateToken(user, s.config.AccessTokenDuration, "access", "")
 	if err != nil {
-		return "", "", 0, 0, err
+		return "", "", "", 0, 0, err
 	}
 
-	refreshToken, err := s.generateToken(user, s.config.RefreshTokenDuration, "refresh")
+	// Generate unique ID for refresh token to enable rotation/revocation
+	refreshTokenID := uuid.New().String()
+	refreshToken, err := s.generateToken(user, s.config.RefreshTokenDuration, "refresh", refreshTokenID)
 	if err != nil {
-		return "", "", 0, 0, err
+		return "", "", "", 0, 0, err
 	}
 
 	expiresIn := int(s.config.AccessTokenDuration.Seconds())
 	refreshExpiresIn := int(s.config.RefreshTokenDuration.Seconds())
-	return accessToken, refreshToken, expiresIn, refreshExpiresIn, nil
+	return accessToken, refreshToken, refreshTokenID, expiresIn, refreshExpiresIn, nil
 }
 
-func (s *tokenGenerator) generateToken(user *adminuser.AdminUser, duration time.Duration, tokenType string) (string, error) {
+func (s *tokenGenerator) generateToken(user *adminuser.AdminUser, duration time.Duration, tokenType string, tokenID string) (string, error) {
 	now := time.Now()
 
-	// Get permissions for the user's role
 	permissions := s.permissionProvider.GetPermissionsForRole(user.Role)
 	permStrings := lo.Map(permissions, func(p adminuser.Permission, _ int) string {
 		return string(p)
@@ -74,13 +76,15 @@ func (s *tokenGenerator) generateToken(user *adminuser.AdminUser, duration time.
 
 	tk := paseto.NewToken()
 	tk.SetIssuedAt(now)
-	tk.SetNotBefore(now)
 	tk.SetExpiration(now.Add(duration))
 	tk.SetSubject(user.ID)
 	tk.SetString("role", string(user.Role))
 	tk.SetString("type", tokenType)
 	tk.Set("permissions", permStrings)
 
-	// Sign with private key (V4 Public = asymmetric)
+	if tokenID != "" {
+		tk.SetJti(tokenID)
+	}
+
 	return tk.V4Sign(s.privateKey, nil), nil
 }

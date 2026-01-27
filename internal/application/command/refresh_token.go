@@ -2,10 +2,16 @@ package command
 
 import (
 	"context"
+	"errors"
 
 	"github.com/Sokol111/ecommerce-auth-service/internal/domain/adminuser"
+	"github.com/Sokol111/ecommerce-commons/pkg/core/logger"
 	"github.com/Sokol111/ecommerce-commons/pkg/security/token"
+	"go.uber.org/zap"
 )
+
+// ErrRefreshTokenReused indicates that a refresh token was used after it was already rotated
+var ErrRefreshTokenReused = errors.New("refresh token reused: possible token theft detected")
 
 type RefreshTokenCommand struct {
 	RefreshToken string
@@ -41,15 +47,18 @@ func NewRefreshTokenHandler(
 }
 
 func (h *refreshTokenHandler) Handle(ctx context.Context, cmd RefreshTokenCommand) (*RefreshTokenResult, error) {
+	log := logger.Get(ctx)
+
 	claims, err := h.tokenValidator.ValidateToken(cmd.RefreshToken)
 	if err != nil {
 		return nil, err
 	}
 
-	// Ensure it's a refresh token
 	if !claims.IsRefresh() {
 		return nil, token.ErrInvalidToken
 	}
+
+	log = log.With(zap.String("user_id", claims.UserID))
 
 	user, err := h.repo.FindByID(ctx, claims.UserID)
 	if err != nil {
@@ -57,17 +66,36 @@ func (h *refreshTokenHandler) Handle(ctx context.Context, cmd RefreshTokenComman
 	}
 
 	if !user.Enabled {
+		log.Warn("token refresh failed: account disabled")
 		return nil, adminuser.ErrAdminUserDisabled
 	}
 
-	accessToken, _, expiresIn, refreshExpiresIn, err := h.tokenGenerator.GenerateTokenPair(user)
+	tokenID, _ := claims.GetString("jti")
+	if tokenID == "" || tokenID != user.RefreshTokenID {
+		log.Error("SECURITY: refresh token reuse detected - invalidating all sessions",
+			zap.String("presented_token_id", tokenID),
+			zap.String("expected_token_id", user.RefreshTokenID),
+		)
+		user.SetRefreshTokenID("")
+		_, _ = h.repo.Update(ctx, user)
+		return nil, ErrRefreshTokenReused
+	}
+
+	accessToken, refreshToken, refreshTokenID, expiresIn, refreshExpiresIn, err := h.tokenGenerator.GenerateTokenPair(user)
 	if err != nil {
 		return nil, err
 	}
 
+	user.SetRefreshTokenID(refreshTokenID)
+	if _, err := h.repo.Update(ctx, user); err != nil {
+		return nil, err
+	}
+
+	log.Debug("token refreshed successfully")
+
 	return &RefreshTokenResult{
 		AccessToken:      accessToken,
-		RefreshToken:     cmd.RefreshToken,
+		RefreshToken:     refreshToken,
 		ExpiresIn:        expiresIn,
 		RefreshExpiresIn: refreshExpiresIn,
 	}, nil

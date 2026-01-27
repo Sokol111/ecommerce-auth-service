@@ -24,34 +24,36 @@ type RolePermissionProvider interface {
 
 // AdminUser - domain aggregate root for admin panel users
 type AdminUser struct {
-	ID           string
-	Version      int
-	Email        string
-	PasswordHash string
-	FirstName    string
-	LastName     string
-	Role         Role
-	Enabled      bool
-	CreatedAt    time.Time
-	ModifiedAt   time.Time
-	LastLoginAt  *time.Time
+	ID             string
+	Version        int
+	Email          string
+	PasswordHash   string
+	FirstName      string
+	LastName       string
+	Role           Role
+	Enabled        bool
+	RefreshTokenID string
+	CreatedAt      time.Time
+	ModifiedAt     time.Time
+	LastLoginAt    *time.Time
 }
 
 // NewAdminUser creates a new admin user
 func NewAdminUser(email, passwordHash, firstName, lastName string, role Role) *AdminUser {
 	now := time.Now().UTC()
 	return &AdminUser{
-		ID:           uuid.New().String(),
-		Version:      1,
-		Email:        normalizeEmail(email),
-		PasswordHash: passwordHash,
-		FirstName:    strings.TrimSpace(firstName),
-		LastName:     strings.TrimSpace(lastName),
-		Role:         role,
-		Enabled:      true,
-		CreatedAt:    now,
-		ModifiedAt:   now,
-		LastLoginAt:  nil,
+		ID:             uuid.New().String(),
+		Version:        1,
+		Email:          normalizeEmail(email),
+		PasswordHash:   passwordHash,
+		FirstName:      strings.TrimSpace(firstName),
+		LastName:       strings.TrimSpace(lastName),
+		Role:           role,
+		Enabled:        true,
+		RefreshTokenID: "",
+		CreatedAt:      now,
+		ModifiedAt:     now,
+		LastLoginAt:    nil,
 	}
 }
 
@@ -62,21 +64,23 @@ func Reconstruct(
 	email, passwordHash, firstName, lastName string,
 	role Role,
 	enabled bool,
+	refreshTokenID string,
 	createdAt, modifiedAt time.Time,
 	lastLoginAt *time.Time,
 ) *AdminUser {
 	return &AdminUser{
-		ID:           id,
-		Version:      version,
-		Email:        email,
-		PasswordHash: passwordHash,
-		FirstName:    firstName,
-		LastName:     lastName,
-		Role:         role,
-		Enabled:      enabled,
-		CreatedAt:    createdAt,
-		ModifiedAt:   modifiedAt,
-		LastLoginAt:  lastLoginAt,
+		ID:             id,
+		Version:        version,
+		Email:          email,
+		PasswordHash:   passwordHash,
+		FirstName:      firstName,
+		LastName:       lastName,
+		Role:           role,
+		Enabled:        enabled,
+		RefreshTokenID: refreshTokenID,
+		CreatedAt:      createdAt,
+		ModifiedAt:     modifiedAt,
+		LastLoginAt:    lastLoginAt,
 	}
 }
 
@@ -99,6 +103,12 @@ func (u *AdminUser) RecordLogin() {
 	now := time.Now().UTC()
 	u.LastLoginAt = &now
 	u.ModifiedAt = now
+}
+
+// SetRefreshTokenID updates the refresh token ID for token rotation
+func (u *AdminUser) SetRefreshTokenID(tokenID string) {
+	u.RefreshTokenID = tokenID
+	u.ModifiedAt = time.Now().UTC()
 }
 
 // Disable disables the admin user

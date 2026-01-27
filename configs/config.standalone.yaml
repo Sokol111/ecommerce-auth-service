@@ -30,6 +30,10 @@ token:
   access-token-duration: 15m
   refresh-token-duration: 48h
 
+rate-limit:
+  login-tokens: 5        # Number of login attempts allowed
+  login-interval: 1m     # Time window for login attempts
+
 # Initial super admin user (created on first startup if not exists)
 admin:
   initial-user:

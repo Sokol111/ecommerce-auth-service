@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"github.com/Sokol111/ecommerce-auth-service/internal/domain/adminuser"
+	"github.com/Sokol111/ecommerce-commons/pkg/core/logger"
+	"go.uber.org/zap"
 )
 
 type DisableAdminUserCommand struct {
@@ -24,8 +26,13 @@ func NewDisableAdminUserHandler(repo adminuser.Repository) DisableAdminUserHandl
 }
 
 func (h *disableAdminUserHandler) Handle(ctx context.Context, cmd DisableAdminUserCommand) error {
-	// Cannot disable yourself
+	log := logger.Get(ctx).With(
+		zap.String("target_user_id", cmd.ID),
+		zap.String("requested_by", cmd.RequestUserID),
+	)
+
 	if cmd.ID == cmd.RequestUserID {
+		log.Warn("disable user failed: cannot disable self")
 		return adminuser.ErrCannotDisableSelf
 	}
 
@@ -34,13 +41,18 @@ func (h *disableAdminUserHandler) Handle(ctx context.Context, cmd DisableAdminUs
 		return err
 	}
 
-	// Cannot disable super admin
 	if user.IsSuperAdmin() {
+		log.Warn("disable user failed: cannot disable super admin")
 		return adminuser.ErrCannotDisableSuperAdmin
 	}
 
 	user.Disable()
 
 	_, err = h.repo.Update(ctx, user)
-	return err
+	if err != nil {
+		return err
+	}
+
+	log.Info("admin user disabled", zap.String("email", user.Email))
+	return nil
 }

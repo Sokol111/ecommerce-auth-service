@@ -38,6 +38,10 @@ token:
   access-token-duration: 15m
   refresh-token-duration: 168h
 
+rate-limit:
+  login-tokens: 5        # Number of login attempts allowed
+  login-interval: 1m     # Time window for login attempts
+
 admin:
   initial-user:
     enabled: true
