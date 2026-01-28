@@ -19,6 +19,7 @@ import (
 
 type authHandler struct {
 	loginHandler        command.LoginHandler
+	logoutHandler       command.LogoutHandler
 	createUserHandler   command.CreateAdminUserHandler
 	disableUserHandler  command.DisableAdminUserHandler
 	enableUserHandler   command.EnableAdminUserHandler
@@ -32,6 +33,7 @@ type authHandler struct {
 
 func newAuthHandler(
 	loginHandler command.LoginHandler,
+	logoutHandler command.LogoutHandler,
 	createUserHandler command.CreateAdminUserHandler,
 	disableUserHandler command.DisableAdminUserHandler,
 	enableUserHandler command.EnableAdminUserHandler,
@@ -44,6 +46,7 @@ func newAuthHandler(
 ) httpapi.Handler {
 	return &authHandler{
 		loginHandler:        loginHandler,
+		logoutHandler:       logoutHandler,
 		createUserHandler:   createUserHandler,
 		disableUserHandler:  disableUserHandler,
 		enableUserHandler:   enableUserHandler,
@@ -143,6 +146,24 @@ func (h *authHandler) AdminLogin(ctx context.Context, req *httpapi.LoginRequest)
 		TokenType:        "Bearer",
 		User:             *toAdminUserProfile(result.User, h.permissionProvider.GetPermissionsForRole(result.User.Role)),
 	}, nil
+}
+
+// AdminLogout implements adminLogout operation.
+func (h *authHandler) AdminLogout(ctx context.Context) (httpapi.AdminLogoutRes, error) {
+	claims, err := h.getCurrentUserClaims(ctx)
+	if err != nil {
+		return &httpapi.AdminLogoutUnauthorized{
+			Status: 401,
+			Type:   *aboutBlankURL,
+			Title:  "Unauthorized",
+		}, nil
+	}
+
+	if err := h.logoutHandler.Handle(ctx, command.LogoutCommand{UserID: claims.UserID}); err != nil {
+		return nil, err
+	}
+
+	return &httpapi.AdminLogoutNoContent{}, nil
 }
 
 // AdminGetProfile implements adminGetProfile operation.

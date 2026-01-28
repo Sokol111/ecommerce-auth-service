@@ -10,6 +10,7 @@ func Module() fx.Option {
 	return fx.Options(
 		fx.Provide(
 			command.NewLoginHandler,
+			command.NewLogoutHandler,
 			command.NewCreateAdminUserHandler,
 			command.NewDisableAdminUserHandler,
 			command.NewEnableAdminUserHandler,
