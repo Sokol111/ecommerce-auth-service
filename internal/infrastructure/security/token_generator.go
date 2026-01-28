@@ -48,26 +48,36 @@ func (s *tokenGenerator) GetPublicKeyHex() string {
 }
 
 // GenerateTokenPair generates access and refresh tokens for a user
-func (s *tokenGenerator) GenerateTokenPair(user *adminuser.AdminUser) (string, string, string, int, int, error) {
+func (s *tokenGenerator) GenerateTokenPair(user *adminuser.AdminUser) (*command.TokenPairResult, error) {
+	now := time.Now().UTC()
+	expiresAt := now.Add(s.config.AccessTokenDuration)
+	refreshExpiresAt := now.Add(s.config.RefreshTokenDuration)
+
 	accessToken, err := s.generateToken(user, s.config.AccessTokenDuration, "access", "")
 	if err != nil {
-		return "", "", "", 0, 0, err
+		return nil, err
 	}
 
 	// Generate unique ID for refresh token to enable rotation/revocation
 	refreshTokenID := uuid.New().String()
 	refreshToken, err := s.generateToken(user, s.config.RefreshTokenDuration, "refresh", refreshTokenID)
 	if err != nil {
-		return "", "", "", 0, 0, err
+		return nil, err
 	}
 
-	expiresIn := int(s.config.AccessTokenDuration.Seconds())
-	refreshExpiresIn := int(s.config.RefreshTokenDuration.Seconds())
-	return accessToken, refreshToken, refreshTokenID, expiresIn, refreshExpiresIn, nil
+	return &command.TokenPairResult{
+		AccessToken:      accessToken,
+		RefreshToken:     refreshToken,
+		RefreshTokenID:   refreshTokenID,
+		ExpiresIn:        int(s.config.AccessTokenDuration.Seconds()),
+		ExpiresAt:        expiresAt,
+		RefreshExpiresIn: int(s.config.RefreshTokenDuration.Seconds()),
+		RefreshExpiresAt: refreshExpiresAt,
+	}, nil
 }
 
 func (s *tokenGenerator) generateToken(user *adminuser.AdminUser, duration time.Duration, tokenType string, tokenID string) (string, error) {
-	now := time.Now()
+	now := time.Now().UTC()
 
 	permissions := s.permissionProvider.GetPermissionsForRole(user.Role)
 	permStrings := lo.Map(permissions, func(p adminuser.Permission, _ int) string {

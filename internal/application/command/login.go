@@ -2,6 +2,7 @@ package command
 
 import (
 	"context"
+	"time"
 
 	"github.com/Sokol111/ecommerce-auth-service/internal/domain/adminuser"
 	"github.com/Sokol111/ecommerce-commons/pkg/core/logger"
@@ -18,7 +19,9 @@ type LoginResult struct {
 	AccessToken      string
 	RefreshToken     string
 	ExpiresIn        int
+	ExpiresAt        time.Time
 	RefreshExpiresIn int
+	RefreshExpiresAt time.Time
 }
 
 type LoginHandler interface {
@@ -62,13 +65,13 @@ func (h *loginHandler) Handle(ctx context.Context, cmd LoginCommand) (*LoginResu
 		return nil, adminuser.ErrAdminUserDisabled
 	}
 
-	accessToken, refreshToken, refreshTokenID, expiresIn, refreshExpiresIn, err := h.tokenGenerator.GenerateTokenPair(user)
+	tokens, err := h.tokenGenerator.GenerateTokenPair(user)
 	if err != nil {
 		return nil, err
 	}
 
 	// Store refresh token ID for rotation validation
-	user.SetRefreshTokenID(refreshTokenID)
+	user.SetRefreshTokenID(tokens.RefreshTokenID)
 	user.RecordLogin()
 	if _, err := h.repo.Update(ctx, user); err != nil {
 		return nil, err
@@ -78,9 +81,11 @@ func (h *loginHandler) Handle(ctx context.Context, cmd LoginCommand) (*LoginResu
 
 	return &LoginResult{
 		User:             user,
-		AccessToken:      accessToken,
-		RefreshToken:     refreshToken,
-		ExpiresIn:        expiresIn,
-		RefreshExpiresIn: refreshExpiresIn,
+		AccessToken:      tokens.AccessToken,
+		RefreshToken:     tokens.RefreshToken,
+		ExpiresIn:        tokens.ExpiresIn,
+		ExpiresAt:        tokens.ExpiresAt,
+		RefreshExpiresIn: tokens.RefreshExpiresIn,
+		RefreshExpiresAt: tokens.RefreshExpiresAt,
 	}, nil
 }

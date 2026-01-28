@@ -3,6 +3,7 @@ package command
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/Sokol111/ecommerce-auth-service/internal/domain/adminuser"
 	"github.com/Sokol111/ecommerce-commons/pkg/core/logger"
@@ -21,7 +22,9 @@ type RefreshTokenResult struct {
 	AccessToken      string
 	RefreshToken     string
 	ExpiresIn        int
+	ExpiresAt        time.Time
 	RefreshExpiresIn int
+	RefreshExpiresAt time.Time
 }
 
 type RefreshTokenHandler interface {
@@ -81,12 +84,12 @@ func (h *refreshTokenHandler) Handle(ctx context.Context, cmd RefreshTokenComman
 		return nil, ErrRefreshTokenReused
 	}
 
-	accessToken, refreshToken, refreshTokenID, expiresIn, refreshExpiresIn, err := h.tokenGenerator.GenerateTokenPair(user)
+	tokens, err := h.tokenGenerator.GenerateTokenPair(user)
 	if err != nil {
 		return nil, err
 	}
 
-	user.SetRefreshTokenID(refreshTokenID)
+	user.SetRefreshTokenID(tokens.RefreshTokenID)
 	if _, err := h.repo.Update(ctx, user); err != nil {
 		return nil, err
 	}
@@ -94,9 +97,11 @@ func (h *refreshTokenHandler) Handle(ctx context.Context, cmd RefreshTokenComman
 	log.Debug("token refreshed successfully")
 
 	return &RefreshTokenResult{
-		AccessToken:      accessToken,
-		RefreshToken:     refreshToken,
-		ExpiresIn:        expiresIn,
-		RefreshExpiresIn: refreshExpiresIn,
+		AccessToken:      tokens.AccessToken,
+		RefreshToken:     tokens.RefreshToken,
+		ExpiresIn:        tokens.ExpiresIn,
+		ExpiresAt:        tokens.ExpiresAt,
+		RefreshExpiresIn: tokens.RefreshExpiresIn,
+		RefreshExpiresAt: tokens.RefreshExpiresAt,
 	}, nil
 }

@@ -1,6 +1,8 @@
 package command
 
 import (
+	"time"
+
 	"github.com/Sokol111/ecommerce-auth-service/internal/domain/adminuser"
 )
 
@@ -12,9 +14,19 @@ type PasswordHasher interface {
 	Compare(hash, password string) bool
 }
 
+// TokenPairResult contains the result of token pair generation
+type TokenPairResult struct {
+	AccessToken      string
+	RefreshToken     string
+	RefreshTokenID   string
+	ExpiresIn        int
+	ExpiresAt        time.Time
+	RefreshExpiresIn int
+	RefreshExpiresAt time.Time
+}
+
 // TokenGenerator handles token generation operations
 type TokenGenerator interface {
 	// GenerateTokenPair generates an access token and refresh token pair
-	// Returns: accessToken, refreshToken, refreshTokenID, expiresInSeconds, refreshExpiresInSeconds, error
-	GenerateTokenPair(user *adminuser.AdminUser) (string, string, string, int, int, error)
+	GenerateTokenPair(user *adminuser.AdminUser) (*TokenPairResult, error)
 }
