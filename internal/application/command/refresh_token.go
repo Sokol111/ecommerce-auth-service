@@ -34,13 +34,13 @@ type RefreshTokenHandler interface {
 type refreshTokenHandler struct {
 	repo           adminuser.Repository
 	tokenGenerator TokenGenerator
-	tokenValidator token.TokenValidator
+	tokenValidator token.Validator
 }
 
 func NewRefreshTokenHandler(
 	repo adminuser.Repository,
 	tokenGenerator TokenGenerator,
-	tokenValidator token.TokenValidator,
+	tokenValidator token.Validator,
 ) RefreshTokenHandler {
 	return &refreshTokenHandler{
 		repo:           repo,
