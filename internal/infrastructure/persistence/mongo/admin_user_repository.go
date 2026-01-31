@@ -6,8 +6,8 @@ import (
 	"github.com/Sokol111/ecommerce-auth-service/internal/domain/adminuser"
 	"github.com/Sokol111/ecommerce-commons/pkg/persistence"
 	commonsmongo "github.com/Sokol111/ecommerce-commons/pkg/persistence/mongo"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 type adminUserRepository struct {
