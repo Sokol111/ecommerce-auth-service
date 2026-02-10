@@ -10,20 +10,22 @@ import (
 	"github.com/Sokol111/ecommerce-auth-service/internal/infrastructure/persistence/mongo"
 	"github.com/Sokol111/ecommerce-auth-service/internal/infrastructure/security"
 	"github.com/Sokol111/ecommerce-auth-service/internal/infrastructure/seeder"
-	"github.com/Sokol111/ecommerce-commons/pkg/modules"
-	"github.com/Sokol111/ecommerce-commons/pkg/swaggerui"
+	commons_core "github.com/Sokol111/ecommerce-commons/pkg/core"
+	commons_http "github.com/Sokol111/ecommerce-commons/pkg/http"
+	commons_observability "github.com/Sokol111/ecommerce-commons/pkg/observability"
+	commons_persistence "github.com/Sokol111/ecommerce-commons/pkg/persistence"
+	commons_swaggerui "github.com/Sokol111/ecommerce-commons/pkg/swaggerui"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
 
 var AppModules = fx.Options(
-	// Infrastructure - Core
-	modules.NewCoreModule(),
-	modules.NewPersistenceModule(),
-	modules.NewHTTPModule(),
-	modules.NewObservabilityModule(),
-	// modules.NewMessagingModule(),
-	swaggerui.NewSwaggerModule(swaggerui.SwaggerConfig{OpenAPIContent: httpapi.OpenAPIDoc}),
+	// Commons
+	commons_core.NewCoreModule(),
+	commons_persistence.NewPersistenceModule(),
+	commons_http.NewHTTPModule(),
+	commons_observability.NewObservabilityModule(),
+	commons_swaggerui.NewSwaggerModule(commons_swaggerui.SwaggerConfig{OpenAPIContent: httpapi.OpenAPIDoc}),
 
 	// Application
 	application.Module(),

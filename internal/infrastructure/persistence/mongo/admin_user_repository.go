@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/Sokol111/ecommerce-auth-service/internal/domain/adminuser"
-	"github.com/Sokol111/ecommerce-commons/pkg/persistence"
 	commonsmongo "github.com/Sokol111/ecommerce-commons/pkg/persistence/mongo"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -41,7 +40,7 @@ func (r *adminUserRepository) FindByEmail(ctx context.Context, email string) (*a
 	}
 
 	if len(result.Items) == 0 {
-		return nil, persistence.ErrEntityNotFound
+		return nil, commonsmongo.ErrEntityNotFound
 	}
 
 	return result.Items[0], nil

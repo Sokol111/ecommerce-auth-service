@@ -13,7 +13,7 @@ import (
 	"github.com/Sokol111/ecommerce-auth-service/internal/application/command"
 	"github.com/Sokol111/ecommerce-auth-service/internal/application/query"
 	"github.com/Sokol111/ecommerce-auth-service/internal/domain/adminuser"
-	"github.com/Sokol111/ecommerce-commons/pkg/persistence"
+	"github.com/Sokol111/ecommerce-commons/pkg/persistence/mongo"
 	"github.com/Sokol111/ecommerce-commons/pkg/security/token"
 )
 
@@ -214,7 +214,7 @@ func (h *authHandler) AdminUserCreate(ctx context.Context, req *httpapi.AdminUse
 // AdminUserGetById implements adminUserGetById operation.
 func (h *authHandler) AdminUserGetById(ctx context.Context, params httpapi.AdminUserGetByIdParams) (httpapi.AdminUserGetByIdRes, error) {
 	user, err := h.getUserByIDHandler.Handle(ctx, query.GetAdminUserByIDQuery{ID: params.ID.String()})
-	if errors.Is(err, persistence.ErrEntityNotFound) {
+	if errors.Is(err, mongo.ErrEntityNotFound) {
 		return &httpapi.AdminUserGetByIdNotFound{
 			Status: 404,
 			Type:   *aboutBlankURL,
@@ -279,7 +279,7 @@ func (h *authHandler) AdminUserDisable(ctx context.Context, params httpapi.Admin
 		RequestUserID: claims.UserID,
 	})
 
-	if errors.Is(err, persistence.ErrEntityNotFound) {
+	if errors.Is(err, mongo.ErrEntityNotFound) {
 		return &httpapi.AdminUserDisableNotFound{
 			Status: 404,
 			Type:   *aboutBlankURL,
@@ -306,7 +306,7 @@ func (h *authHandler) AdminUserEnable(ctx context.Context, params httpapi.AdminU
 		ID: params.ID.String(),
 	})
 
-	if errors.Is(err, persistence.ErrEntityNotFound) {
+	if errors.Is(err, mongo.ErrEntityNotFound) {
 		return &httpapi.AdminUserEnableNotFound{
 			Status: 404,
 			Type:   *aboutBlankURL,

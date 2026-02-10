@@ -9,7 +9,7 @@ import (
 
 	"github.com/Sokol111/ecommerce-auth-service/internal/application/command"
 	"github.com/Sokol111/ecommerce-auth-service/internal/domain/adminuser"
-	"github.com/Sokol111/ecommerce-commons/pkg/persistence"
+	"github.com/Sokol111/ecommerce-commons/pkg/persistence/mongo"
 )
 
 const superAdminRole = adminuser.Role("super_admin")
@@ -52,7 +52,7 @@ func (s *Seeder) EnsureInitialAdmin(ctx context.Context) error {
 
 	// Check if admin with this email already exists
 	existing, err := s.repo.FindByEmail(ctx, s.cfg.Email)
-	if err != nil && !errors.Is(err, persistence.ErrEntityNotFound) {
+	if err != nil && !errors.Is(err, mongo.ErrEntityNotFound) {
 		return fmt.Errorf("failed to check existing admin: %w", err)
 	}
 
