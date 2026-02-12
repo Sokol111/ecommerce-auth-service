@@ -73,14 +73,14 @@ func (h *refreshTokenHandler) Handle(ctx context.Context, cmd RefreshTokenComman
 		return nil, adminuser.ErrAdminUserDisabled
 	}
 
-	tokenID, _ := claims.GetString("jti")
+	tokenID, _ := claims.GetString("jti") //nolint:errcheck // jti may be missing
 	if tokenID == "" || tokenID != user.RefreshTokenID {
 		log.Error("SECURITY: refresh token reuse detected - invalidating all sessions",
 			zap.String("presented_token_id", tokenID),
 			zap.String("expected_token_id", user.RefreshTokenID),
 		)
 		user.SetRefreshTokenID("")
-		_, _ = h.repo.Update(ctx, user)
+		_, _ = h.repo.Update(ctx, user) //nolint:errcheck // best-effort cleanup on security event
 		return nil, ErrRefreshTokenReused
 	}
 

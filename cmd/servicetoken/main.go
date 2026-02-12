@@ -88,7 +88,7 @@ func main() {
 			"attributes:read",
 		}
 	}
-	token.Set("permissions", perms)
+	_ = token.Set("permissions", perms) //nolint:errcheck // token.Set only fails on nil key
 
 	// Sign token
 	signedToken := token.V4Sign(privateKey, nil)

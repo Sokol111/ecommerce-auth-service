@@ -37,7 +37,7 @@ var AppModules = fx.Options(
 	seeder.Module(),
 
 	// HTTP
-	http.NewHttpHandlerModule(),
+	http.NewHTTPHandlerModule(),
 )
 
 func main() {

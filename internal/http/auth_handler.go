@@ -1,4 +1,4 @@
-package http
+package http //nolint:revive // package name intentional
 
 import (
 	"context"
@@ -59,7 +59,7 @@ func newAuthHandler(
 	}
 }
 
-var aboutBlankURL, _ = url.Parse("about:blank")
+var aboutBlankURL, _ = url.Parse("about:blank") //nolint:errcheck // static URL always valid
 
 // Helper functions
 func toOptDateTime(t *time.Time) httpapi.OptDateTime {
@@ -154,7 +154,7 @@ func (h *authHandler) AdminLogin(ctx context.Context, req *httpapi.LoginRequest)
 func (h *authHandler) AdminLogout(ctx context.Context) (httpapi.AdminLogoutRes, error) {
 	claims, err := h.getCurrentUserClaims(ctx)
 	if err != nil {
-		return &httpapi.AdminLogoutUnauthorized{
+		return &httpapi.AdminLogoutUnauthorized{ //nolint:nilerr // intentional HTTP response
 			Status: 401,
 			Type:   *aboutBlankURL,
 			Title:  "Unauthorized",
@@ -172,7 +172,7 @@ func (h *authHandler) AdminLogout(ctx context.Context) (httpapi.AdminLogoutRes, 
 func (h *authHandler) AdminGetProfile(ctx context.Context) (httpapi.AdminGetProfileRes, error) {
 	claims, err := h.getCurrentUserClaims(ctx)
 	if err != nil {
-		return &httpapi.AdminGetProfileUnauthorized{
+		return &httpapi.AdminGetProfileUnauthorized{ //nolint:nilerr // intentional HTTP response
 			Status: 401,
 			Type:   *aboutBlankURL,
 			Title:  "Unauthorized",
@@ -212,7 +212,7 @@ func (h *authHandler) AdminUserCreate(ctx context.Context, req *httpapi.AdminUse
 }
 
 // AdminUserGetById implements adminUserGetById operation.
-func (h *authHandler) AdminUserGetById(ctx context.Context, params httpapi.AdminUserGetByIdParams) (httpapi.AdminUserGetByIdRes, error) {
+func (h *authHandler) AdminUserGetById(ctx context.Context, params httpapi.AdminUserGetByIdParams) (httpapi.AdminUserGetByIdRes, error) { //nolint:revive // name from OpenAPI spec
 	user, err := h.getUserByIDHandler.Handle(ctx, query.GetAdminUserByIDQuery{ID: params.ID.String()})
 	if errors.Is(err, mongo.ErrEntityNotFound) {
 		return &httpapi.AdminUserGetByIdNotFound{
@@ -267,7 +267,7 @@ func (h *authHandler) AdminUserList(ctx context.Context, params httpapi.AdminUse
 func (h *authHandler) AdminUserDisable(ctx context.Context, params httpapi.AdminUserDisableParams) (httpapi.AdminUserDisableRes, error) {
 	claims, err := h.getCurrentUserClaims(ctx)
 	if err != nil {
-		return &httpapi.AdminUserDisableUnauthorized{
+		return &httpapi.AdminUserDisableUnauthorized{ //nolint:nilerr // intentional HTTP response
 			Status: 401,
 			Type:   *aboutBlankURL,
 			Title:  "Unauthorized",
@@ -335,7 +335,7 @@ func (h *authHandler) TokenRefresh(ctx context.Context, req *httpapi.TokenRefres
 		}, nil
 	}
 	if err != nil {
-		return &httpapi.TokenRefreshUnauthorized{
+		return &httpapi.TokenRefreshUnauthorized{ //nolint:nilerr // intentional HTTP response
 			Status: 401,
 			Type:   *aboutBlankURL,
 			Title:  "Invalid or expired refresh token",

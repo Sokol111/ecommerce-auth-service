@@ -1,4 +1,4 @@
-package http
+package http //nolint:revive // package name intentional
 
 import (
 	"context"
@@ -18,7 +18,7 @@ type LoginRateLimiter struct {
 // interval: time window for the limit
 // Example: NewLoginRateLimiter(5, time.Minute) = 5 requests per minute
 func NewLoginRateLimiter(tokens uint64, interval time.Duration) *LoginRateLimiter {
-	store, _ := memorystore.New(&memorystore.Config{
+	store, _ := memorystore.New(&memorystore.Config{ //nolint:errcheck // config is static
 		Tokens:        tokens,
 		Interval:      interval,
 		SweepInterval: time.Minute,
@@ -29,6 +29,6 @@ func NewLoginRateLimiter(tokens uint64, interval time.Duration) *LoginRateLimite
 
 // Allow checks if a login attempt for the given email is allowed.
 func (l *LoginRateLimiter) Allow(ctx context.Context, email string) bool {
-	_, _, _, ok, _ := l.store.Take(ctx, email)
+	_, _, _, ok, _ := l.store.Take(ctx, email) //nolint:errcheck // we only care about ok
 	return ok
 }

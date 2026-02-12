@@ -90,7 +90,7 @@ func (s *tokenGenerator) generateToken(user *adminuser.AdminUser, duration time.
 	tk.SetSubject(user.ID)
 	tk.SetString("role", string(user.Role))
 	tk.SetString("type", tokenType)
-	tk.Set("permissions", permStrings)
+	_ = tk.Set("permissions", permStrings) //nolint:errcheck // token.Set only fails on nil key
 
 	if tokenID != "" {
 		tk.SetJti(tokenID)
