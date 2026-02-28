@@ -14,6 +14,7 @@ import (
 	commons_http "github.com/Sokol111/ecommerce-commons/pkg/http"
 	commons_observability "github.com/Sokol111/ecommerce-commons/pkg/observability"
 	commons_persistence "github.com/Sokol111/ecommerce-commons/pkg/persistence"
+	commons_security "github.com/Sokol111/ecommerce-commons/pkg/security"
 	commons_swaggerui "github.com/Sokol111/ecommerce-commons/pkg/swaggerui"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -25,6 +26,7 @@ var AppModules = fx.Options(
 	commons_persistence.NewPersistenceModule(),
 	commons_http.NewHTTPModule(),
 	commons_observability.NewObservabilityModule(),
+	commons_security.NewSecurityModule(),
 	commons_swaggerui.NewSwaggerModule(commons_swaggerui.SwaggerConfig{OpenAPIContent: httpapi.OpenAPIDoc}),
 
 	// Application
