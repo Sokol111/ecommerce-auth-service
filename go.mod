@@ -1,11 +1,11 @@
 module github.com/Sokol111/ecommerce-auth-service
 
-go 1.26.0
+go 1.26.1
 
 require (
 	aidanwoods.dev/go-paseto v1.6.0
-	github.com/Sokol111/ecommerce-auth-service-api v1.0.7
-	github.com/Sokol111/ecommerce-commons v0.4.6
+	github.com/Sokol111/ecommerce-auth-service-api v1.1.0
+	github.com/Sokol111/ecommerce-commons v0.5.0
 	github.com/google/uuid v1.6.0
 	github.com/samber/lo v1.53.0
 	github.com/sethvargo/go-limiter v1.1.0
@@ -54,7 +54,7 @@ require (
 	github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78 // indirect
 	go.mongodb.org/mongo-driver v1.17.9 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
-	go.opentelemetry.io/contrib/instrumentation/go.mongodb.org/mongo-driver/v2/mongo/otelmongo v0.0.0-20260312145906-d6dbd68170c0 // indirect
+	go.opentelemetry.io/contrib/instrumentation/go.mongodb.org/mongo-driver/v2/mongo/otelmongo v0.0.0-20260313150254-340d326bb900 // indirect
 	go.opentelemetry.io/contrib/instrumentation/runtime v0.67.0 // indirect
 	go.opentelemetry.io/otel v1.42.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc v1.42.0 // indirect
