@@ -10,8 +10,6 @@ mongo:
   port: 27017
   database: "auth"
   direct-connection: true
-  migrations:
-    enabled: true
 
 observability:
   otel-collector-endpoint: ""

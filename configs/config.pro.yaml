@@ -4,25 +4,15 @@
 # Values can be overridden by environment variables.
 # Viper automatically maps: mongo.host -> MONGO_HOST, etc.
 
-logger:
-  level: info
-  development: false
-
-server:
-  port: 8080
-
 mongo:
-  host: mongo
-  port: 27017
-  username: admin
+  host: ""
+  username: ""
   password: ""
   database: auth
-  replica-set: rs0
-  migrations:
-    enabled: true
+  replica-set: ""
 
 observability:
-  otel-collector-endpoint: http://otel-collector:4317
+  otel-collector-endpoint: ""
   tracing:
     enabled: true
   metrics:
@@ -44,7 +34,7 @@ rate-limit:
 admin:
   initial-user:
     enabled: true
-    email: admin@example.com
+    email: ""
     password: ""
     first-name: Super
     last-name: Admin
