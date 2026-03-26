@@ -17,6 +17,15 @@
             "args": []
         },
         {
+            "name": "Generate PASETO Keys",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/cmd/keygen",
+            "cwd": "${workspaceFolder}",
+            "args": []
+        },
+        {
             "name": "Generate Service Token",
             "type": "go",
             "request": "launch",
