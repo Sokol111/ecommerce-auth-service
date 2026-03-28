@@ -18,6 +18,10 @@ observability:
   metrics:
     enabled: false
 
+pprof:
+  enabled: true
+  port: 6060
+
 security:
   token:
     public-key: "eb6ebefd6a2b0a304d43c2ccca329aef0a1439d429dbe8ca9b6190622ce38341"
