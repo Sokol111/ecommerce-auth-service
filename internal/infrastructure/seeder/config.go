@@ -1,27 +1,26 @@
 package seeder
 
 import (
-	"github.com/spf13/viper"
+	"github.com/knadh/koanf/v2"
 )
 
 // Config holds configuration for initial admin user seeding
 type Config struct {
-	Enabled   bool   `mapstructure:"enabled"`
-	Email     string `mapstructure:"email"`
-	Password  string `mapstructure:"password"`
-	FirstName string `mapstructure:"first-name"`
-	LastName  string `mapstructure:"last-name"`
+	Enabled   bool   `koanf:"enabled"`
+	Email     string `koanf:"email"`
+	Password  string `koanf:"password"`
+	FirstName string `koanf:"first-name"`
+	LastName  string `koanf:"last-name"`
 }
 
-func newConfig(v *viper.Viper) Config {
+func newConfig(k *koanf.Koanf) Config {
 	var cfg Config
 
-	sub := v.Sub("admin.initial-user")
-	if sub == nil {
+	if !k.Exists("admin.initial-user") {
 		return Config{Enabled: false}
 	}
 
-	if err := sub.UnmarshalExact(&cfg); err != nil {
+	if err := k.Unmarshal("admin.initial-user", &cfg); err != nil {
 		return Config{Enabled: false}
 	}
 

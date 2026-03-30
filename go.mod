@@ -4,12 +4,12 @@ go 1.26.1
 
 require (
 	aidanwoods.dev/go-paseto v1.6.0
-	github.com/Sokol111/ecommerce-auth-service-api v1.1.2
-	github.com/Sokol111/ecommerce-commons v0.5.4
+	github.com/Sokol111/ecommerce-auth-service-api v1.1.3
+	github.com/Sokol111/ecommerce-commons v0.5.5
 	github.com/google/uuid v1.6.0
+	github.com/knadh/koanf/v2 v2.3.4
 	github.com/samber/lo v1.53.0
 	github.com/sethvargo/go-limiter v1.1.0
-	github.com/spf13/viper v1.21.0
 	go.mongodb.org/mongo-driver/v2 v2.5.0
 	go.uber.org/fx v1.24.0
 	go.uber.org/zap v1.27.1
@@ -36,25 +36,25 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.28.0 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/klauspost/compress v1.18.5 // indirect
+	github.com/knadh/koanf/maps v0.1.2 // indirect
+	github.com/knadh/koanf/parsers/yaml v1.1.0 // indirect
+	github.com/knadh/koanf/providers/env/v2 v2.0.0 // indirect
+	github.com/knadh/koanf/providers/file v1.2.1 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
+	github.com/mitchellh/copystructure v1.2.0 // indirect
+	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/montanaflynn/stats v0.9.0 // indirect
 	github.com/ogen-go/ogen v1.20.2 // indirect
-	github.com/pelletier/go-toml/v2 v2.3.0 // indirect
-	github.com/sagikazarmark/locafero v0.12.0 // indirect
 	github.com/segmentio/asm v1.2.1 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
-	github.com/spf13/afero v1.15.0 // indirect
-	github.com/spf13/cast v1.10.0 // indirect
-	github.com/spf13/pflag v1.0.10 // indirect
-	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.2.0 // indirect
 	github.com/xdg-go/stringprep v1.0.4 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78 // indirect
 	go.mongodb.org/mongo-driver v1.17.9 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
-	go.opentelemetry.io/contrib/instrumentation/go.mongodb.org/mongo-driver/v2/mongo/otelmongo v0.0.0-20260327131730-b24435fbe205 // indirect
+	go.opentelemetry.io/contrib/instrumentation/go.mongodb.org/mongo-driver/v2/mongo/otelmongo v0.0.0-20260330091701-6a52c85dae1b // indirect
 	go.opentelemetry.io/contrib/instrumentation/runtime v0.67.0 // indirect
 	go.opentelemetry.io/otel v1.42.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc v1.42.0 // indirect

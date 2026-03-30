@@ -4,25 +4,25 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/spf13/viper"
+	"github.com/knadh/koanf/v2"
 )
 
 // RateLimitConfig holds configuration for rate limiting
 type RateLimitConfig struct {
 	// Login rate limiting
-	LoginTokens   uint64        `mapstructure:"login-tokens"`   // Number of allowed requests
-	LoginInterval time.Duration `mapstructure:"login-interval"` // Time window for the tokens
+	LoginTokens   uint64        `koanf:"login-tokens"`   // Number of allowed requests
+	LoginInterval time.Duration `koanf:"login-interval"` // Time window for the tokens
 }
 
-func newRateLimitConfig(v *viper.Viper) (RateLimitConfig, error) {
+func newRateLimitConfig(k *koanf.Koanf) (RateLimitConfig, error) {
 	cfg := RateLimitConfig{
 		// Defaults: 5 requests per minute
 		LoginTokens:   5,
 		LoginInterval: time.Minute,
 	}
 
-	if sub := v.Sub("rate-limit"); sub != nil {
-		if err := sub.UnmarshalExact(&cfg); err != nil {
+	if k.Exists("rate-limit") {
+		if err := k.Unmarshal("rate-limit", &cfg); err != nil {
 			return cfg, fmt.Errorf("failed to load rate-limit config: %w", err)
 		}
 	}
