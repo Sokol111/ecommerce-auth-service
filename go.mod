@@ -5,7 +5,7 @@ go 1.26.1
 require (
 	aidanwoods.dev/go-paseto v1.6.0
 	github.com/Sokol111/ecommerce-auth-service-api v1.1.3
-	github.com/Sokol111/ecommerce-commons v0.5.8
+	github.com/Sokol111/ecommerce-commons v0.5.9
 	github.com/google/uuid v1.6.0
 	github.com/knadh/koanf/v2 v2.3.4
 	github.com/samber/lo v1.53.0
