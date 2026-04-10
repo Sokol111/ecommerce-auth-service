@@ -320,6 +320,9 @@ generate-all-service-tokens: ## Generate service tokens for all services
 	@echo "$(COLOR_BLUE)--- category-query-service ---$(COLOR_RESET)"
 	@go run ./cmd/servicetoken/ -private-key=$(PRIVATE_KEY) -name=category-query-service -permissions="products:read,categories:read,attributes:read,tenants:read" -duration=$(TOKEN_DURATION)
 	@echo ""
+	@echo "$(COLOR_BLUE)--- platform-ui ---$(COLOR_RESET)"
+	@go run ./cmd/servicetoken/ -private-key=$(PRIVATE_KEY) -name=platform-ui -permissions="tenants:read,tenants:write" -duration=$(TOKEN_DURATION)
+	@echo ""
 	@echo "$(COLOR_GREEN)✓ All service tokens generated!$(COLOR_RESET)"
 
 # =============================================================================
