@@ -12,6 +12,7 @@ import (
 	"github.com/Sokol111/ecommerce-auth-service/internal/infrastructure/seeder"
 	commons_core "github.com/Sokol111/ecommerce-commons/pkg/core"
 	commons_http "github.com/Sokol111/ecommerce-commons/pkg/http"
+	commons_messaging "github.com/Sokol111/ecommerce-commons/pkg/messaging"
 	commons_observability "github.com/Sokol111/ecommerce-commons/pkg/observability"
 	commons_persistence "github.com/Sokol111/ecommerce-commons/pkg/persistence"
 	commons_pprof "github.com/Sokol111/ecommerce-commons/pkg/pprof"
@@ -29,6 +30,7 @@ var AppModules = fx.Options(
 	commons_persistence.NewPersistenceModule(commons_persistence.WithTenantMigrations()),
 	commons_http.NewHTTPModule(),
 	commons_observability.NewObservabilityModule(),
+	commons_messaging.NewMessagingModule(),
 	commons_security.NewSecurityModule(),
 	commons_pprof.NewPprofModule(),
 	commons_swaggerui.NewSwaggerModule(commons_swaggerui.SwaggerConfig{OpenAPIContent: httpapi.OpenAPIDoc}),
@@ -36,6 +38,7 @@ var AppModules = fx.Options(
 	// Tenant
 	tenant.MiddlewareModule(),
 	tenantapi.NewTenantSlugsModule("clients.tenant-service"),
+	tenantapi.TenantEventsModule("tenant-events"),
 
 	// Application
 	application.Module(),
