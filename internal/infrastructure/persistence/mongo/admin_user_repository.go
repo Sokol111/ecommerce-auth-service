@@ -13,9 +13,9 @@ type adminUserRepository struct {
 	*commonsmongo.GenericRepository[adminuser.AdminUser, adminUserEntity]
 }
 
-func newAdminUserRepository(db commonsmongo.Mongo, mapper *adminUserMapper) (adminuser.Repository, error) {
-	genericRepo, err := commonsmongo.NewGenericRepository(
-		db.GetCollection("admin_user"),
+func newAdminUserRepository(admin commonsmongo.Admin, mapper *adminUserMapper) (adminuser.Repository, error) {
+	genericRepo, err := commonsmongo.NewTenantRepository(
+		admin, "admin_user",
 		mapper,
 	)
 	if err != nil {

@@ -8,6 +8,7 @@ import (
 	"github.com/Sokol111/ecommerce-auth-service/internal/domain/adminuser"
 	"github.com/Sokol111/ecommerce-commons/pkg/core/logger"
 	"github.com/Sokol111/ecommerce-commons/pkg/security/token"
+	"github.com/Sokol111/ecommerce-commons/pkg/tenant"
 	"go.uber.org/zap"
 )
 
@@ -61,6 +62,12 @@ func (h *refreshTokenHandler) Handle(ctx context.Context, cmd RefreshTokenComman
 		return nil, token.ErrInvalidToken
 	}
 
+	// Verify the refresh token was issued for this tenant
+	requestTenant, _ := tenant.SlugFromContext(ctx)
+	if claims.Tenant != requestTenant {
+		return nil, token.ErrTenantMismatch
+	}
+
 	log = log.With(zap.String("user_id", claims.UserID))
 
 	user, err := h.repo.FindByID(ctx, claims.UserID)
@@ -84,7 +91,7 @@ func (h *refreshTokenHandler) Handle(ctx context.Context, cmd RefreshTokenComman
 		return nil, ErrRefreshTokenReused
 	}
 
-	tokens, err := h.tokenGenerator.GenerateTokenPair(user)
+	tokens, err := h.tokenGenerator.GenerateTokenPair(ctx, user)
 	if err != nil {
 		return nil, err
 	}

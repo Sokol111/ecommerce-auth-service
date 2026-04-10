@@ -1,6 +1,7 @@
 package security
 
 import (
+	"context"
 	"encoding/hex"
 	"errors"
 	"time"
@@ -8,6 +9,7 @@ import (
 	"aidanwoods.dev/go-paseto"
 	"github.com/Sokol111/ecommerce-auth-service/internal/application/command"
 	"github.com/Sokol111/ecommerce-auth-service/internal/domain/adminuser"
+	"github.com/Sokol111/ecommerce-commons/pkg/tenant"
 	"github.com/google/uuid"
 	"github.com/samber/lo"
 )
@@ -48,19 +50,21 @@ func (s *tokenGenerator) GetPublicKeyHex() string {
 }
 
 // GenerateTokenPair generates access and refresh tokens for a user
-func (s *tokenGenerator) GenerateTokenPair(user *adminuser.AdminUser) (*command.TokenPairResult, error) {
+func (s *tokenGenerator) GenerateTokenPair(ctx context.Context, user *adminuser.AdminUser) (*command.TokenPairResult, error) {
 	now := time.Now().UTC()
 	expiresAt := now.Add(s.config.AccessTokenDuration)
 	refreshExpiresAt := now.Add(s.config.RefreshTokenDuration)
 
-	accessToken, err := s.generateToken(user, s.config.AccessTokenDuration, "access", "")
+	tenantSlug, _ := tenant.SlugFromContext(ctx)
+
+	accessToken, err := s.generateToken(user, s.config.AccessTokenDuration, "access", "", tenantSlug)
 	if err != nil {
 		return nil, err
 	}
 
 	// Generate unique ID for refresh token to enable rotation/revocation
 	refreshTokenID := uuid.New().String()
-	refreshToken, err := s.generateToken(user, s.config.RefreshTokenDuration, "refresh", refreshTokenID)
+	refreshToken, err := s.generateToken(user, s.config.RefreshTokenDuration, "refresh", refreshTokenID, tenantSlug)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +80,7 @@ func (s *tokenGenerator) GenerateTokenPair(user *adminuser.AdminUser) (*command.
 	}, nil
 }
 
-func (s *tokenGenerator) generateToken(user *adminuser.AdminUser, duration time.Duration, tokenType string, tokenID string) (string, error) {
+func (s *tokenGenerator) generateToken(user *adminuser.AdminUser, duration time.Duration, tokenType string, tokenID string, tenantSlug string) (string, error) {
 	now := time.Now().UTC()
 
 	permissions := s.permissionProvider.GetPermissionsForRole(user.Role)
@@ -91,6 +95,10 @@ func (s *tokenGenerator) generateToken(user *adminuser.AdminUser, duration time.
 	tk.SetString("role", string(user.Role))
 	tk.SetString("type", tokenType)
 	_ = tk.Set("permissions", permStrings) //nolint:errcheck // token.Set only fails on nil key
+
+	if tenantSlug != "" {
+		tk.SetString("tenant", tenantSlug)
+	}
 
 	if tokenID != "" {
 		tk.SetJti(tokenID)

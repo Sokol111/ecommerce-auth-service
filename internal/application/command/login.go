@@ -65,7 +65,7 @@ func (h *loginHandler) Handle(ctx context.Context, cmd LoginCommand) (*LoginResu
 		return nil, adminuser.ErrAdminUserDisabled
 	}
 
-	tokens, err := h.tokenGenerator.GenerateTokenPair(user)
+	tokens, err := h.tokenGenerator.GenerateTokenPair(ctx, user)
 	if err != nil {
 		return nil, err
 	}

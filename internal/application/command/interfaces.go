@@ -1,6 +1,7 @@
 package command
 
 import (
+	"context"
 	"time"
 
 	"github.com/Sokol111/ecommerce-auth-service/internal/domain/adminuser"
@@ -27,6 +28,7 @@ type TokenPairResult struct {
 
 // TokenGenerator handles token generation operations
 type TokenGenerator interface {
-	// GenerateTokenPair generates an access token and refresh token pair
-	GenerateTokenPair(user *adminuser.AdminUser) (*TokenPairResult, error)
+	// GenerateTokenPair generates an access token and refresh token pair.
+	// Context is used to extract tenant slug for the token claims.
+	GenerateTokenPair(ctx context.Context, user *adminuser.AdminUser) (*TokenPairResult, error)
 }

@@ -22,9 +22,14 @@ pprof:
   enabled: true
   port: 6060
 
+clients:
+  tenant-service:
+    base-url: "http://ecommerce-tenant-service:8080"
+
 security:
   token:
     public-key: "eb6ebefd6a2b0a304d43c2ccca329aef0a1439d429dbe8ca9b6190622ce38341"
+    service-token: "v4.public.eyJleHAiOiIyMDM2LTA0LTA3VDE1OjM5OjU4KzAyOjAwIiwiaWF0IjoiMjAyNi0wNC0xMFQxNTozOTo1OCswMjowMCIsIm5iZiI6IjIwMjYtMDQtMTBUMTU6Mzk6NTgrMDI6MDAiLCJwZXJtaXNzaW9ucyI6WyJ0ZW5hbnRzOnJlYWQiXSwicm9sZSI6InNlcnZpY2VfYWNjb3VudCIsInNlcnZpY2VfbmFtZSI6ImF1dGgtc2VydmljZSIsInN1YiI6InNlcnZpY2U6YXV0aC1zZXJ2aWNlIiwidHlwZSI6ImFjY2VzcyJ9C16v0j6EEkb1oIKscU0IBUf8D13aGG2lHA6x5JfLipx4smFhz_2wc-B9XSV8q-jVMECxwk_XUew9QTKF31HYCQ"
 
 token:
   private-key: "e9bc26b8119fa3ccd616e3bd05603507fd308cb30a0a99c4b858c621dd147f1beb6ebefd6a2b0a304d43c2ccca329aef0a1439d429dbe8ca9b6190622ce38341"
