@@ -283,6 +283,46 @@ bump-version: ## Bump version (use TYPE=major|minor|patch)
 	echo "$(COLOR_BLUE)Version updated: $(VERSION) -> $$NEW_VERSION$(COLOR_RESET)"
 
 # =============================================================================
+# Service Tokens
+# =============================================================================
+
+PRIVATE_KEY ?= e9bc26b8119fa3ccd616e3bd05603507fd308cb30a0a99c4b858c621dd147f1beb6ebefd6a2b0a304d43c2ccca329aef0a1439d429dbe8ca9b6190622ce38341
+TOKEN_DURATION ?= 87600h
+
+.PHONY: generate-service-token
+generate-service-token: ## Generate a service token (use NAME=service-name PERMS=a:read,b:write)
+	@if [ -z "$(NAME)" ]; then \
+		echo "$(COLOR_YELLOW)Usage: make generate-service-token NAME=product-query-service PERMS=products:read,tenants:read$(COLOR_RESET)"; \
+		exit 1; \
+	fi
+	@go run ./cmd/servicetoken/ \
+		-private-key=$(PRIVATE_KEY) \
+		-name=$(NAME) \
+		-permissions="$(PERMS)" \
+		-duration=$(TOKEN_DURATION)
+
+.PHONY: generate-all-service-tokens
+generate-all-service-tokens: ## Generate service tokens for all services
+	@echo "$(COLOR_BOLD)Generating all service tokens...$(COLOR_RESET)"
+	@echo ""
+	@echo "$(COLOR_BLUE)--- catalog-service ---$(COLOR_RESET)"
+	@go run ./cmd/servicetoken/ -private-key=$(PRIVATE_KEY) -name=catalog-service -permissions="products:read,categories:read,attributes:read,tenants:read" -duration=$(TOKEN_DURATION)
+	@echo ""
+	@echo "$(COLOR_BLUE)--- auth-service ---$(COLOR_RESET)"
+	@go run ./cmd/servicetoken/ -private-key=$(PRIVATE_KEY) -name=auth-service -permissions="tenants:read" -duration=$(TOKEN_DURATION)
+	@echo ""
+	@echo "$(COLOR_BLUE)--- image-service ---$(COLOR_RESET)"
+	@go run ./cmd/servicetoken/ -private-key=$(PRIVATE_KEY) -name=image-service -permissions="products:read,tenants:read" -duration=$(TOKEN_DURATION)
+	@echo ""
+	@echo "$(COLOR_BLUE)--- product-query-service ---$(COLOR_RESET)"
+	@go run ./cmd/servicetoken/ -private-key=$(PRIVATE_KEY) -name=product-query-service -permissions="products:read,categories:read,attributes:read,tenants:read" -duration=$(TOKEN_DURATION)
+	@echo ""
+	@echo "$(COLOR_BLUE)--- category-query-service ---$(COLOR_RESET)"
+	@go run ./cmd/servicetoken/ -private-key=$(PRIVATE_KEY) -name=category-query-service -permissions="products:read,categories:read,attributes:read,tenants:read" -duration=$(TOKEN_DURATION)
+	@echo ""
+	@echo "$(COLOR_GREEN)✓ All service tokens generated!$(COLOR_RESET)"
+
+# =============================================================================
 # Help
 # =============================================================================
 
