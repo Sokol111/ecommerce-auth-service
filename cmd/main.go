@@ -9,7 +9,6 @@ import (
 	"github.com/Sokol111/ecommerce-auth-service/internal/infrastructure/permissions"
 	"github.com/Sokol111/ecommerce-auth-service/internal/infrastructure/persistence/mongo"
 	"github.com/Sokol111/ecommerce-auth-service/internal/infrastructure/security"
-	"github.com/Sokol111/ecommerce-auth-service/internal/infrastructure/seeder"
 	commons_core "github.com/Sokol111/ecommerce-commons/pkg/core"
 	commons_http "github.com/Sokol111/ecommerce-commons/pkg/http"
 	commons_messaging "github.com/Sokol111/ecommerce-commons/pkg/messaging"
@@ -47,7 +46,6 @@ var AppModules = fx.Options(
 	permissions.Module(),
 	security.Module(),
 	mongo.Module(),
-	seeder.Module(),
 
 	// HTTP
 	http.NewHTTPHandlerModule(),
